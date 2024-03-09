@@ -8,6 +8,17 @@ any conventions or RFC standards.
 
 ![Two client windows side-by-side](/docs/images/demo.png)
 
+## Usage
+
+With Python 3.11+ and Git installed, you can run the following:
+
+```sh
+pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.1.1
+```
+
+Once installed, the `dumdum` and `dumdum-server` entry points should be
+provided. Run `dumdum-server --help` for options.
+
 ## Implementation
 
 Dumdum consists of two parts:
