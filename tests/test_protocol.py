@@ -84,7 +84,7 @@ def test_send_message():
         client.send_message(channel.name, content),
         server,
     )
-    assert client_events == [ClientEventMessageReceived(channel, nick, content)]
+    assert client_events == []
     assert server_events == [ServerEventMessageReceived(channel, content)]
 
 
