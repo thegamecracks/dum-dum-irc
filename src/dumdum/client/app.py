@@ -31,7 +31,7 @@ class TkApp(Tk):
         self._client_events = queue.Queue()
 
         self.title("Dumdum Client")
-        self.geometry("480x480")
+        self.geometry("640x480")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
