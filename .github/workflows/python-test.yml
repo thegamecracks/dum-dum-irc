@@ -1,0 +1,24 @@
+name: Lint and test
+
+on:
+  push:
+    paths:
+      - '**.py'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        cache: pip
+        cache-dependency-path: pyproject.toml
+        python-version-file: pyproject.toml
+    - run: pip install pyright
+    - name: Install dumdum
+      run: pip install .[tests]
+    - run: pyright
+    - run: pytest
