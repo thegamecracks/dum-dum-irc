@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 
+from dumdum.logging import configure_logging
+
 from .app import TkApp
 from .connect_frame import ConnectFrame
 from .event_thread import EventThread
@@ -13,8 +15,18 @@ def main():
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase logging verbosity",
+    )
 
     args = parser.parse_args()
+    verbose: int = args.verbose
+
+    configure_logging(verbose)
 
     with EventThread() as event_thread:
         app = TkApp(event_thread)

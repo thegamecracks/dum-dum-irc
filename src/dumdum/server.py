@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 
+from dumdum.logging import configure_logging
 from dumdum.protocol import (
     Channel,
     HighCommand,
@@ -17,6 +18,13 @@ def main():
     parser = argparse.ArgumentParser(
         description=__doc__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="Increase logging verbosity",
     )
     parser.add_argument(
         "-c",
@@ -38,9 +46,12 @@ def main():
     )
 
     args = parser.parse_args()
+    verbose: int = args.verbose
     channels: list[Channel] = args.channels or get_default_channels()
     host: str | None = args.host
     port: int = args.port
+
+    configure_logging(verbose)
 
     hc = HighCommand()
     for channel in channels:
