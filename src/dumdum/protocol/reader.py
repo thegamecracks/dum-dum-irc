@@ -5,7 +5,7 @@ from dumdum.protocol import varchar
 
 
 class Reader:
-    def __init__(self, buffer: bytearray) -> None:
+    def __init__(self, buffer: bytearray | bytes) -> None:
         self.buffer = buffer
         self._index = 0
         self._closed = False
@@ -51,3 +51,13 @@ def bytearray_reader(buffer: bytearray) -> Iterator[Reader]:
         reader.close()
 
     buffer[: reader._index] = b""
+
+
+@contextlib.contextmanager
+def byte_reader(buffer: bytes) -> Iterator[Reader]:
+    reader = Reader(buffer)
+
+    try:
+        yield reader
+    finally:
+        reader.close()

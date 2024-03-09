@@ -13,7 +13,7 @@ def load(f: _Readable, *, max_length: int) -> str:
     byte_count = math.ceil(max_length.bit_length() / 8)
     length_bytes = f.read(byte_count)
     if len(length_bytes) != byte_count:
-        raise ValueError(f"Insufficient bytes for {max_length = }")
+        raise IndexError(f"Insufficient bytes for {max_length = }")
 
     length = int.from_bytes(length_bytes, byteorder="big")
     if length > max_length:
@@ -21,7 +21,7 @@ def load(f: _Readable, *, max_length: int) -> str:
 
     message = f.read(length)
     if length != len(message):
-        raise ValueError(f"Insufficient bytes for {max_length = }")
+        raise IndexError(f"Insufficient bytes for {max_length = }")
 
     return message.decode()
 

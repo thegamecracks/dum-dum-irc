@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Sequence
 
 from dumdum.protocol.channel import Channel
 
@@ -29,3 +30,10 @@ class ClientEventMessageReceived(ClientEvent):
     channel: Channel
     nick: str
     content: str
+
+
+@dataclass
+class ClientEventChannelsListed(ClientEvent):
+    """The server responded to our request for a channel list."""
+
+    channels: Sequence[Channel]

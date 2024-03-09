@@ -37,3 +37,9 @@ class ClientMessagePost:
                 *varchar.dumps(self.content, max_length=MAX_MESSAGE_LENGTH),
             ]
         )
+
+
+@dataclass
+class ClientMessageListChannels:
+    def __bytes__(self) -> bytes:
+        return bytes([ClientMessageType.LIST_CHANNELS.value])

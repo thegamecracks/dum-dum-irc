@@ -11,6 +11,7 @@ from dumdum.protocol import (
     ServerEventAuthentication,
     ServerEventMessageReceived,
 )
+from dumdum.protocol.client.events import ClientEventChannelsListed
 
 T = TypeVar("T")
 
@@ -24,6 +25,7 @@ def communicate(
         i, outgoing = 0, data
         while len(outgoing) > 0:
             receiver, receiver_events = order[i % len(order)]
+            print(f"{type(receiver).__name__} << {outgoing}")
             events, outgoing = receiver.receive_bytes(outgoing)
             receiver_events.extend(events)
             i += 1
@@ -103,3 +105,24 @@ def test_conflicting_nicknames():
 
     assert c2_events == [ClientEventAuthentication(success=False)]
     assert s2_events == [ServerEventAuthentication(success=False, nick=nick)]
+
+
+def test_list_channels():
+    hc = HighCommand()
+
+    channels = [
+        Channel("announcements"),
+        Channel("general"),
+        Channel("memes"),
+        Channel("coding-lounge"),
+        Channel("fishing-trips"),
+    ]
+    for channel in channels:
+        hc.add_channel(channel)
+
+    client = Client(nick="thegamecracks")
+    server = Server(hc)
+    communicate(client, client.authenticate(), server)
+
+    client_events, _ = communicate(client, client.list_channels(), server)
+    assert client_events == [ClientEventChannelsListed(channels)]

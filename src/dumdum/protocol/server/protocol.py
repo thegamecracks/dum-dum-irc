@@ -20,6 +20,7 @@ from .events import (
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
+    ServerMessageListChannels,
     ServerMessagePost,
     ServerMessageSendIncompatibleVersion,
 )
@@ -72,6 +73,7 @@ class Server(Protocol):
                 full_events.extend(events)
                 full_outgoing.extend(outgoing)
         except (IndexError, ValueError):
+            # FIXME: this is making stuff hard to debug...
             pass
 
         return full_events, bytes(full_outgoing)
@@ -82,6 +84,8 @@ class Server(Protocol):
             return self._authenticate(reader)
         elif t == ClientMessageType.SEND_MESSAGE:
             return self._send_message(reader)
+        elif t == ClientMessageType.LIST_CHANNELS:
+            return self._list_channels(reader)
 
         raise RuntimeError(f"No handler for {t}")
 
@@ -126,3 +130,8 @@ class Server(Protocol):
         # TODO: broadcast message to all users
         assert self.nick is not None
         return [event], self.send_message(channel, self.nick, content)
+
+    def _list_channels(self, reader: Reader) -> ParsedData:
+        # TODO: maybe add event for listing channels
+        response = ServerMessageListChannels(self.hc.channels)
+        return [], bytes(response)
