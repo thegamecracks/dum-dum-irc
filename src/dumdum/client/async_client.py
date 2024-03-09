@@ -87,8 +87,8 @@ class AsyncClient:
         return await self._wait_for_authentication()
 
     async def _wait_for_authentication(self) -> bool:
-        assert self._auth_fut is None
-        self._auth_fut = asyncio.get_running_loop().create_future()
+        if self._auth_fut is None:
+            self._auth_fut = asyncio.get_running_loop().create_future()
         return await self._auth_fut
 
     def _handle_events(self, events: list[ClientEvent]) -> None:
