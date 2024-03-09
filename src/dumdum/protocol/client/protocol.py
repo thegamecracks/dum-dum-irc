@@ -1,5 +1,6 @@
 from enum import Enum
 
+from dumdum.protocol.constants import MAX_MESSAGE_LENGTH, MAX_NICK_LENGTH
 from dumdum.protocol.enums import ServerMessageType
 from dumdum.protocol.errors import InvalidStateError
 from dumdum.protocol.interfaces import Protocol
@@ -9,8 +10,9 @@ from .events import (
     ClientEvent,
     ClientEventAuthentication,
     ClientEventIncompatibleVersion,
+    ClientEventMessageReceived,
 )
-from .messages import ClientMessageAuthenticate
+from .messages import ClientMessageAuthenticate, ClientMessagePost
 
 ParsedData = tuple[list[ClientEvent], bytes]
 
@@ -44,6 +46,9 @@ class Client(Protocol):
             )
         )
 
+    def send_message(self, content: str) -> bytes:
+        return bytes(ClientMessagePost(content))
+
     def _assert_state(self, *states: ClientState) -> None:
         if self._state not in states:
             raise InvalidStateError(self._state, states)
@@ -70,6 +75,8 @@ class Client(Protocol):
             return self._parse_required_version(reader)
         elif t == ServerMessageType.ACKNOWLEDGE_AUTHENTICATION:
             return self._accept_authentication(reader)
+        elif t == ServerMessageType.SEND_MESSAGE:
+            return self._parse_message(reader)
 
         raise RuntimeError(f"No handler for {t}")
 
@@ -87,4 +94,10 @@ class Client(Protocol):
             self._state = ClientState.READY
 
         event = ClientEventAuthentication(success)
+        return [event], b""
+
+    def _parse_message(self, reader: Reader) -> ParsedData:
+        nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
+        content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
+        event = ClientEventMessageReceived(nick, content)
         return [event], b""

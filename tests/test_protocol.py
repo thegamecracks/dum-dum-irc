@@ -3,9 +3,11 @@ from typing import Sequence, Type, TypeVar
 from dumdum.protocol import (
     Client,
     ClientEventAuthentication,
+    ClientEventMessageReceived,
     Protocol,
     Server,
     ServerEventAuthenticated,
+    ServerEventMessageReceived,
 )
 
 T = TypeVar("T")
@@ -56,6 +58,25 @@ def test_authenticate():
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert_event_order(client_events, ClientEventAuthentication)
     assert_event_order(server_events, ServerEventAuthenticated)
+
+
+def test_send_message():
+    nick = "thegamecracks"
+    content = "Hello world!"
+
+    client = Client(nick=nick)
+    server = Server()
+    communicate(client, client.authenticate(), server)
+
+    client_events, server_events = communicate(
+        client,
+        client.send_message(content),
+        server,
+    )
+    assert_event_order(client_events, ClientEventMessageReceived)
+    assert_event_order(server_events, ServerEventMessageReceived)
+    assert client_events[0] == ClientEventMessageReceived(nick, content)
+    assert server_events[0] == ServerEventMessageReceived(content)
 
 
 if __name__ == "__main__":

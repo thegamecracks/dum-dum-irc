@@ -9,3 +9,4 @@ class ClientMessageType(Enum):
 class ServerMessageType(Enum):
     INCOMPATIBLE_VERSION = 0
     ACKNOWLEDGE_AUTHENTICATION = 1
+    SEND_MESSAGE = 2

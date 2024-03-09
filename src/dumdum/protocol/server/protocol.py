@@ -14,6 +14,7 @@ from .events import (
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
+    ServerMessagePost,
     ServerMessageSendIncompatibleVersion,
 )
 
@@ -30,13 +31,19 @@ class Server(Protocol):
 
     PROTOCOL_VERSION = 0
 
+    nick: str | None
+
     def __init__(self) -> None:
+        self.nick = None
         self._buffer = bytearray()
         self._state = ServerState.AWAITING_AUTHENTICATION
 
     def receive_bytes(self, data: bytes) -> ParsedData:
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
+
+    def send_message(self, nick: str, content: str) -> bytes:
+        return bytes(ServerMessagePost(nick, content))
 
     def _assert_state(self, *states: ServerState) -> None:
         if self._state not in states:
@@ -82,6 +89,7 @@ class Server(Protocol):
 
         event = ServerEventAuthenticated(nick=nick)
         response = ServerMessageAcknowledgeAuthentication(success=True)
+        self.nick = nick
         self._state = ServerState.READY
         return [event], bytes(response)
 
@@ -91,4 +99,5 @@ class Server(Protocol):
 
         event = ServerEventMessageReceived(content)
         # TODO: broadcast message to all users
-        return [event], b""
+        assert self.nick is not None
+        return [event], self.send_message(self.nick, content)
