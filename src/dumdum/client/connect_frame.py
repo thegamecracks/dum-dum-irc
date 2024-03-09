@@ -41,6 +41,8 @@ class ConnectFrame(Frame):
         self.port_entry_var.set("6667")
         self.nick_entry_var.set("Somebody")
 
+        self._connect_bind = app.bind("<Return>", lambda event: self.do_connect())
+
         self._connection_attempt = None
 
     def do_connect(self) -> None:
@@ -54,3 +56,7 @@ class ConnectFrame(Frame):
 
         coro = self.app.attempt_connection(host, port, nick)
         self._connection_attempt = self.app.submit(coro)
+
+    def destroy(self) -> None:
+        self.app.unbind("<Return>", self._connect_bind)
+        super().destroy()
