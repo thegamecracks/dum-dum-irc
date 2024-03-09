@@ -46,7 +46,8 @@ class ChatFrame(Frame):
             self.channel_list.refresh()
         elif isinstance(event, ClientEventMessageReceived):
             message = self.message_cache.add_message_from_event(event)
-            self.messages.add_message(message)
+            if event.channel == self.channel_list.selected_channel:
+                self.messages.add_message(message)
 
 
 class ChannelList(Frame):
