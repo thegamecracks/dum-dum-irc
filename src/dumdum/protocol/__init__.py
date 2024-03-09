@@ -2,8 +2,11 @@ from .client import (
     Client,
     ClientEvent,
     ClientEventAuthentication,
+    ClientEventChannelsListed,
     ClientEventIncompatibleVersion,
     ClientEventMessageReceived,
+    ClientMessageAuthenticate,
+    ClientMessageListChannels,
     ClientMessagePost,
     ClientState,
 )
@@ -14,6 +17,8 @@ from .server import (
     ServerEventIncompatibleVersion,
     ServerEventMessageReceived,
     ServerMessageAcknowledgeAuthentication,
+    ServerMessageListChannels,
+    ServerMessagePost,
     ServerMessageSendIncompatibleVersion,
     ServerState,
 )

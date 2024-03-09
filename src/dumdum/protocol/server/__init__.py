@@ -6,6 +6,8 @@ from .events import (
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
+    ServerMessageListChannels,
+    ServerMessagePost,
     ServerMessageSendIncompatibleVersion,
 )
 from .protocol import Server, ServerState
