@@ -13,6 +13,10 @@ classifiers = []
 dynamic = ["version"]
 dependencies = []
 
+[project.scripts]
+dumdum = "dumdum.client.__main__:main"
+dumdum-server = "dumdum.server:main"
+
 [project.optional-dependencies]
 tests = [
     "pytest>=8.0.2",
