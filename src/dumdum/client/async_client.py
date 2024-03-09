@@ -40,7 +40,10 @@ class AsyncClient:
             self._read_task = tg.create_task(_read_coro)
 
             try:
-                await self._handshake()
+                success = await self._handshake()
+                if not success:
+                    raise RuntimeError("Could not authenticate with server")
+
                 yield self
             finally:
                 await self.close()
