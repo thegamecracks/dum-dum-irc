@@ -28,7 +28,7 @@ class InvalidLengthError(MalformedDataError):
 class InvalidStateError(ProtocolError):
     """Some action cannot be handled in the protocol's current state."""
 
-    def __init__(self, current_state: Enum, expected_states: tuple[Enum]) -> None:
+    def __init__(self, current_state: Enum, expected_states: tuple[Enum, ...]) -> None:
         super().__init__(
             "Client state must be {}, but is currently {}".format(
                 " or ".join(s.name for s in expected_states),
