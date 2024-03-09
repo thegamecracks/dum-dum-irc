@@ -1,8 +1,10 @@
 """Host a dumdum server."""
+
 from __future__ import annotations
 
 import argparse
 import asyncio
+import logging
 
 from dumdum.logging import configure_logging
 from dumdum.protocol import (
@@ -12,6 +14,8 @@ from dumdum.protocol import (
     ServerEvent,
     ServerEventMessageReceived,
 )
+
+log = logging.getLogger(__name__)
 
 
 def main():
@@ -93,11 +97,17 @@ class Manager:
         reader: asyncio.StreamReader,
         writer: asyncio.StreamWriter,
     ):
+        addr = writer.get_extra_info("peername")
+        log.info("Accepted connection from %s", addr)
+
         connection = Connection(self, reader, writer, self._create_server())
         self.connections.append(connection)
         try:
             await connection.communicate()
+        except BaseException:
+            log.exception("Error occurred while handling %s", addr)
         finally:
+            log.info("Connection %s has disconnected", addr)
             writer.close()
             await writer.wait_closed()
             self.connections.remove(connection)
@@ -110,6 +120,12 @@ class Manager:
             self._handle_event(conn, event)
 
     def _handle_event(self, conn: Connection, event: ServerEvent) -> None:
+        log.debug(
+            "%s produced by %s",
+            type(event).__name__,
+            conn.writer.get_extra_info("peername"),
+        )
+
         if isinstance(event, ServerEventMessageReceived):
             self._broadcast_message(conn, event)
 
