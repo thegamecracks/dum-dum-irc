@@ -52,6 +52,10 @@ class Server(Protocol):
     def send_message(self, channel: Channel, nick: str, content: str) -> bytes:
         return bytes(ServerMessagePost(channel, nick, content))
 
+    def close(self) -> None:
+        if self.nick is not None:
+            self.hc.remove_user(self.nick)
+
     def _assert_state(self, *states: ServerState) -> None:
         if self._state not in states:
             raise InvalidStateError(self._state, states)
@@ -92,10 +96,15 @@ class Server(Protocol):
             response = ServerMessageSendIncompatibleVersion(self.PROTOCOL_VERSION)
             return [event], bytes(response)
 
-        # TODO: check that nickname is available
+        user = self.hc.get_user(nick)
+        if user is not None:
+            # TODO: maybe add message type for taken nickname
+            response = ServerMessageAcknowledgeAuthentication(success=False)
+            return [], bytes(response)
 
         event = ServerEventAuthenticated(nick=nick)
         response = ServerMessageAcknowledgeAuthentication(success=True)
+        self.hc.add_user(nick)
         self.nick = nick
         self._state = ServerState.READY
         return [event], bytes(response)
@@ -107,6 +116,7 @@ class Server(Protocol):
 
         channel = self.hc.get_channel(channel_name)
         if channel is None:
+            # TODO: maybe add event for invalid channel
             return [], b""
 
         event = ServerEventMessageReceived(channel, content)

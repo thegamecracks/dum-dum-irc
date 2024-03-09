@@ -1,14 +1,14 @@
-from dataclasses import dataclass, field
+from typing import TypeAlias
 
 from .channel import Channel
 
+User: TypeAlias = str
 
-@dataclass
+
 class HighCommand:
-    # users: dict[str, None] = field(default_factory=dict)
-
-    def __post_init__(self) -> None:
+    def __init__(self) -> None:
         self._channels: dict[str, Channel] = {}
+        self._users: dict[str, User] = {}
 
     @property
     def channels(self) -> tuple[Channel, ...]:
@@ -22,3 +22,16 @@ class HighCommand:
 
     def remove_channel(self, name: str) -> Channel | None:
         return self._channels.pop(name, None)
+
+    @property
+    def users(self) -> tuple[User, ...]:
+        return tuple(self._users.values())
+
+    def add_user(self, user: User) -> None:
+        self._users[user] = user
+
+    def get_user(self, nick: str) -> User | None:
+        return self._users.get(nick)
+
+    def remove_user(self, nick: str) -> User | None:
+        return self._users.pop(nick, None)

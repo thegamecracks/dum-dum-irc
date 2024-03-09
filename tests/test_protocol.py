@@ -85,3 +85,22 @@ def test_send_message():
     assert_event_order(server_events, ServerEventMessageReceived)
     assert client_events[0] == ClientEventMessageReceived(channel, nick, content)
     assert server_events[0] == ServerEventMessageReceived(channel, content)
+
+
+def test_nickname_validation():
+    hc = HighCommand()
+
+    c1 = Client(nick="thegamecracks")
+    s1 = Server(hc)
+    c2 = Client(nick="thegamecracks")
+    s2 = Server(hc)
+
+    c1_events, s1_events = communicate(c1, c1.authenticate(), s1)
+    c2_events, s2_events = communicate(c2, c2.authenticate(), s2)
+
+    assert_event_order(c1_events, ClientEventAuthentication)
+    assert_event_order(s1_events, ServerEventAuthenticated)
+
+    assert_event_order(c2_events, ClientEventAuthentication)
+    # NOTE: no equivalent event for failed authentication on server
+    assert c2_events == [ClientEventAuthentication(success=False)]
