@@ -6,7 +6,7 @@ from dumdum.protocol import (
     Channel,
     Client,
     ClientEventAuthentication,
-    ClientEventMessageReceived,
+    ClientEventChannelsListed,
     ClientState,
     HighCommand,
     InvalidStateError,
@@ -16,7 +16,6 @@ from dumdum.protocol import (
     ServerEventMessageReceived,
     ServerState,
 )
-from dumdum.protocol.client.events import ClientEventChannelsListed
 
 T = TypeVar("T")
 
