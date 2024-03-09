@@ -1,15 +1,20 @@
 from typing import Sequence, Type, TypeVar
 
+import pytest
+
 from dumdum.protocol import (
     Channel,
     Client,
     ClientEventAuthentication,
     ClientEventMessageReceived,
+    ClientState,
     HighCommand,
+    InvalidStateError,
     Protocol,
     Server,
     ServerEventAuthentication,
     ServerEventMessageReceived,
+    ServerState,
 )
 from dumdum.protocol.client.events import ClientEventChannelsListed
 
@@ -126,3 +131,45 @@ def test_list_channels():
 
     client_events, _ = communicate(client, client.list_channels(), server)
     assert client_events == [ClientEventChannelsListed(channels)]
+
+
+def test_unauthenticated_send_message():
+    nick = "thegamecracks"
+    content = "Hello world!"
+
+    hc = HighCommand()
+    channel = Channel("general")
+    hc.add_channel(channel)
+
+    client = Client(nick=nick)
+    server = Server(hc)
+
+    with pytest.raises(InvalidStateError):
+        client.send_message(channel.name, content)
+
+    client._state = ClientState.READY
+    data = client.send_message(channel.name, content)
+
+    with pytest.raises(InvalidStateError):
+        communicate(client, data, server)
+
+
+def test_unauthenticated_server_send_message():
+    nick = "thegamecracks"
+    content = "Hello world!"
+
+    hc = HighCommand()
+    channel = Channel("general")
+    hc.add_channel(channel)
+
+    client = Client(nick=nick)
+    server = Server(hc)
+
+    with pytest.raises(InvalidStateError):
+        server.send_message(channel, nick, content)
+
+    server._state = ServerState.READY
+    data = server.send_message(channel, nick, content)
+
+    with pytest.raises(InvalidStateError):
+        communicate(server, data, client)
