@@ -10,7 +10,7 @@ from .client import (
 from .server import (
     Server,
     ServerEvent,
-    ServerEventAuthenticated,
+    ServerEventAuthentication,
     ServerEventIncompatibleVersion,
     ServerEventMessageReceived,
     ServerMessageAcknowledgeAuthentication,

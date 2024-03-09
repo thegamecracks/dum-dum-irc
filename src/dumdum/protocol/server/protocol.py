@@ -14,7 +14,7 @@ from dumdum.protocol.reader import Reader, bytearray_reader
 
 from .events import (
     ServerEvent,
-    ServerEventAuthenticated,
+    ServerEventAuthentication,
     ServerEventIncompatibleVersion,
     ServerEventMessageReceived,
 )
@@ -96,17 +96,20 @@ class Server(Protocol):
             response = ServerMessageSendIncompatibleVersion(self.PROTOCOL_VERSION)
             return [event], bytes(response)
 
+        success = True
+
         user = self.hc.get_user(nick)
         if user is not None:
             # TODO: maybe add message type for taken nickname
-            response = ServerMessageAcknowledgeAuthentication(success=False)
-            return [], bytes(response)
+            success = False
 
-        event = ServerEventAuthenticated(nick=nick)
-        response = ServerMessageAcknowledgeAuthentication(success=True)
-        self.hc.add_user(nick)
-        self.nick = nick
-        self._state = ServerState.READY
+        if success:
+            self.hc.add_user(nick)
+            self.nick = nick
+            self._state = ServerState.READY
+
+        event = ServerEventAuthentication(success=success, nick=nick)
+        response = ServerMessageAcknowledgeAuthentication(success)
         return [event], bytes(response)
 
     def _send_message(self, reader: Reader) -> ParsedData:

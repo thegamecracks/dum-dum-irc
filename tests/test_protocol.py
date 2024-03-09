@@ -8,7 +8,7 @@ from dumdum.protocol import (
     HighCommand,
     Protocol,
     Server,
-    ServerEventAuthenticated,
+    ServerEventAuthentication,
     ServerEventMessageReceived,
 )
 
@@ -56,12 +56,13 @@ def assert_event_order(events: Sequence[object], *expected_events: Type[object])
 def test_authenticate():
     hc = HighCommand()
 
-    client = Client(nick="thegamecracks")
+    nick = "thegamecracks"
+    client = Client(nick=nick)
     server = Server(hc)
 
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert client_events == [ClientEventAuthentication(success=True)]
-    assert server_events == [ServerEventAuthenticated(nick="thegamecracks")]
+    assert server_events == [ServerEventAuthentication(success=True, nick=nick)]
 
 
 def test_send_message():
@@ -88,16 +89,17 @@ def test_send_message():
 def test_nickname_validation():
     hc = HighCommand()
 
-    c1 = Client(nick="thegamecracks")
+    nick = "thegamecracks"
+    c1 = Client(nick=nick)
     s1 = Server(hc)
-    c2 = Client(nick="thegamecracks")
+    c2 = Client(nick=nick)
     s2 = Server(hc)
 
     c1_events, s1_events = communicate(c1, c1.authenticate(), s1)
     c2_events, s2_events = communicate(c2, c2.authenticate(), s2)
 
     assert c1_events == [ClientEventAuthentication(success=True)]
-    assert s1_events == [ServerEventAuthenticated(nick="thegamecracks")]
+    assert s1_events == [ServerEventAuthentication(success=True, nick=nick)]
 
     assert c2_events == [ClientEventAuthentication(success=False)]
-    # NOTE: no equivalent event for failed authentication on server
+    assert s2_events == [ServerEventAuthentication(success=False, nick=nick)]

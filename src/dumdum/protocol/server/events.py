@@ -16,9 +16,10 @@ class ServerEventIncompatibleVersion(ServerEvent):
 
 
 @dataclass
-class ServerEventAuthenticated(ServerEvent):
-    """The client successfully authenticated with the server."""
+class ServerEventAuthentication(ServerEvent):
+    """The client attempted to authenticate with the server."""
 
+    success: bool
     nick: str
 
 
