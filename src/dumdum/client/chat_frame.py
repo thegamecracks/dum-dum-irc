@@ -128,13 +128,8 @@ class MessageView(Frame):
 
         self.nick = Label(self, text=message.nick)
         self.nick.grid(row=0, column=0, sticky="w")
-        self.content = Label(self, text=message.content)
+        self.content = Label(self, text=message.content, wraplength=1000)
         self.content.grid(row=1, column=0, sticky="ew")
-
-        self.content.bind("<<Configure>>", self._on_content_configure)
-
-    def _on_content_configure(self, event: Event) -> None:
-        self.content.configure(wraplength=self.content.winfo_reqwidth())
 
 
 @dataclass
@@ -176,7 +171,7 @@ class SendBox(Frame):
         self.send_button = Button(self, text="Send", command=self.do_send)
         self.send_button.grid(row=0, column=1)
 
-        self.content_entry.bind("<Return>", lambda event: self.do_send)
+        self.content_entry.bind("<Return>", lambda event: self.do_send())
 
     def do_send(self) -> None:
         content = self.content_entry_var.get()
