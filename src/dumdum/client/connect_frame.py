@@ -57,6 +57,11 @@ class ConnectFrame(Frame):
         coro = self.app.attempt_connection(host, port, nick)
         self._connection_attempt = self.app.submit(coro)
 
+        self.connect.state(["disabled"])
+        self._connection_attempt.add_done_callback(
+            lambda fut: self.connect.state(["!disabled"])
+        )
+
     def destroy(self) -> None:
         self.app.unbind("<Return>", self._connect_bind)
         super().destroy()
