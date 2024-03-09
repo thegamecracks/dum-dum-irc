@@ -1,9 +1,11 @@
 from typing import Sequence, Type, TypeVar
 
 from dumdum.protocol import (
+    Channel,
     Client,
     ClientEventAuthentication,
     ClientEventMessageReceived,
+    HighCommand,
     Protocol,
     Server,
     ServerEventAuthenticated,
@@ -52,8 +54,10 @@ def assert_event_order(events: Sequence[object], *expected_events: Type[object])
 
 
 def test_authenticate():
+    hc = HighCommand()
+
     client = Client(nick="thegamecracks")
-    server = Server()
+    server = Server(hc)
 
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert_event_order(client_events, ClientEventAuthentication)
@@ -64,20 +68,20 @@ def test_send_message():
     nick = "thegamecracks"
     content = "Hello world!"
 
+    hc = HighCommand()
+    channel = Channel("general")
+    hc.add_channel(channel)
+
     client = Client(nick=nick)
-    server = Server()
+    server = Server(hc)
     communicate(client, client.authenticate(), server)
 
     client_events, server_events = communicate(
         client,
-        client.send_message(content),
+        client.send_message(channel.name, content),
         server,
     )
     assert_event_order(client_events, ClientEventMessageReceived)
     assert_event_order(server_events, ServerEventMessageReceived)
-    assert client_events[0] == ClientEventMessageReceived(nick, content)
-    assert server_events[0] == ServerEventMessageReceived(content)
-
-
-if __name__ == "__main__":
-    test_authenticate()
+    assert client_events[0] == ClientEventMessageReceived(channel, nick, content)
+    assert server_events[0] == ServerEventMessageReceived(channel, content)

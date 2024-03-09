@@ -1,8 +1,14 @@
 from enum import Enum
 
-from dumdum.protocol.constants import MAX_MESSAGE_LENGTH, MAX_NICK_LENGTH
+from dumdum.protocol.channel import Channel
+from dumdum.protocol.constants import (
+    MAX_CHANNEL_NAME_LENGTH,
+    MAX_MESSAGE_LENGTH,
+    MAX_NICK_LENGTH,
+)
 from dumdum.protocol.enums import ClientMessageType
 from dumdum.protocol.errors import InvalidStateError
+from dumdum.protocol.highcommand import HighCommand
 from dumdum.protocol.interfaces import Protocol
 from dumdum.protocol.reader import Reader, bytearray_reader
 
@@ -33,7 +39,8 @@ class Server(Protocol):
 
     nick: str | None
 
-    def __init__(self) -> None:
+    def __init__(self, hc: HighCommand) -> None:
+        self.hc = hc
         self.nick = None
         self._buffer = bytearray()
         self._state = ServerState.AWAITING_AUTHENTICATION
@@ -42,8 +49,8 @@ class Server(Protocol):
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
 
-    def send_message(self, nick: str, content: str) -> bytes:
-        return bytes(ServerMessagePost(nick, content))
+    def send_message(self, channel: Channel, nick: str, content: str) -> bytes:
+        return bytes(ServerMessagePost(channel, nick, content))
 
     def _assert_state(self, *states: ServerState) -> None:
         if self._state not in states:
@@ -95,9 +102,14 @@ class Server(Protocol):
 
     def _send_message(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.READY)
+        channel_name = reader.read_varchar(max_length=MAX_CHANNEL_NAME_LENGTH)
         content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
 
-        event = ServerEventMessageReceived(content)
+        channel = self.hc.get_channel(channel_name)
+        if channel is None:
+            return [], b""
+
+        event = ServerEventMessageReceived(channel, content)
         # TODO: broadcast message to all users
         assert self.nick is not None
-        return [event], self.send_message(self.nick, content)
+        return [event], self.send_message(channel, self.nick, content)

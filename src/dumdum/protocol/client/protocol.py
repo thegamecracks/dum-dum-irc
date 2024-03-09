@@ -1,4 +1,5 @@
 from enum import Enum
+from dumdum.protocol.channel import Channel
 
 from dumdum.protocol.constants import MAX_MESSAGE_LENGTH, MAX_NICK_LENGTH
 from dumdum.protocol.enums import ServerMessageType
@@ -46,8 +47,8 @@ class Client(Protocol):
             )
         )
 
-    def send_message(self, content: str) -> bytes:
-        return bytes(ClientMessagePost(content))
+    def send_message(self, channel_name: str, content: str) -> bytes:
+        return bytes(ClientMessagePost(channel_name, content))
 
     def _assert_state(self, *states: ClientState) -> None:
         if self._state not in states:
@@ -97,7 +98,8 @@ class Client(Protocol):
         return [event], b""
 
     def _parse_message(self, reader: Reader) -> ParsedData:
+        channel = Channel.from_reader(reader)
         nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
         content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
-        event = ClientEventMessageReceived(nick, content)
+        event = ClientEventMessageReceived(channel, nick, content)
         return [event], b""

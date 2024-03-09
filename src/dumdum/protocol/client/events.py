@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from dumdum.protocol.channel import Channel
+
 
 @dataclass
 class ClientEvent:
@@ -24,5 +26,6 @@ class ClientEventAuthentication(ClientEvent):
 class ClientEventMessageReceived(ClientEvent):
     """The server broadcasted a message to the client."""
 
+    channel: Channel
     nick: str
     content: str
