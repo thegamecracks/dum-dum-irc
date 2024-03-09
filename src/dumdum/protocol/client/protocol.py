@@ -97,7 +97,7 @@ class Client(Protocol):
     def _parse_required_version(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
         version = reader.readexactly(1)[0]
-        event = ClientEventIncompatibleVersion(version)
+        event = ClientEventIncompatibleVersion(version, self.REQUIRED_VERSION)
         return [event], b""
 
     def _accept_authentication(self, reader: Reader) -> ParsedData:

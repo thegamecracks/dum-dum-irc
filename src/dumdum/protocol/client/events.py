@@ -13,7 +13,8 @@ class ClientEvent:
 class ClientEventIncompatibleVersion(ClientEvent):
     """The server does not support our protocol version."""
 
-    version: int
+    server_version: int
+    client_version: int
 
 
 @dataclass
