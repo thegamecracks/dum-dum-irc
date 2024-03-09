@@ -51,6 +51,7 @@ class Server(Protocol):
         return self._maybe_parse_buffer()
 
     def send_message(self, channel: Channel, nick: str, content: str) -> bytes:
+        self._assert_state(ServerState.READY)
         return bytes(ServerMessagePost(channel, nick, content))
 
     def close(self) -> None:
@@ -133,5 +134,6 @@ class Server(Protocol):
 
     def _list_channels(self, reader: Reader) -> ParsedData:
         # TODO: maybe add event for listing channels
+        self._assert_state(ServerState.READY)
         response = ServerMessageListChannels(self.hc.channels)
         return [], bytes(response)

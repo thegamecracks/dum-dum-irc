@@ -53,9 +53,11 @@ class Client(Protocol):
         )
 
     def send_message(self, channel_name: str, content: str) -> bytes:
+        self._assert_state(ClientState.READY)
         return bytes(ClientMessagePost(channel_name, content))
 
     def list_channels(self) -> bytes:
+        self._assert_state(ClientState.READY)
         return bytes(ClientMessageListChannels())
 
     def _assert_state(self, *states: ClientState) -> None:
@@ -109,6 +111,7 @@ class Client(Protocol):
         return [event], b""
 
     def _parse_message(self, reader: Reader) -> ParsedData:
+        self._assert_state(ClientState.READY)
         channel = Channel.from_reader(reader)
         nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
         content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
@@ -116,6 +119,7 @@ class Client(Protocol):
         return [event], b""
 
     def _parse_channel_list(self, reader: Reader) -> ParsedData:
+        self._assert_state(ClientState.READY)
         length = int.from_bytes(
             reader.readexactly(MAX_LIST_CHANNEL_LENGTH_BYTES),
             byteorder="big",
