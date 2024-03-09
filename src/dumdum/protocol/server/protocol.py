@@ -130,7 +130,7 @@ class Server(Protocol):
         event = ServerEventMessageReceived(channel, content)
         # TODO: broadcast message to all users
         assert self.nick is not None
-        return [event], self.send_message(channel, self.nick, content)
+        return [event], b""
 
     def _list_channels(self, reader: Reader) -> ParsedData:
         # TODO: maybe add event for listing channels
