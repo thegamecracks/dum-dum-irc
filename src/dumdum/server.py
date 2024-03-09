@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import contextlib
 import logging
 
 from dumdum.logging import configure_logging
 from dumdum.protocol import (
     Channel,
     HighCommand,
+    InvalidStateError,
     Server,
     ServerEvent,
     ServerEventMessageReceived,
@@ -136,12 +138,13 @@ class Manager:
     ) -> None:
         assert conn.server.nick is not None
         for peer in self.connections:
-            data = peer.server.send_message(
-                event.channel,
-                conn.server.nick,
-                event.content,
-            )
-            peer.writer.write(data)
+            with contextlib.suppress(InvalidStateError):
+                data = peer.server.send_message(
+                    event.channel,
+                    conn.server.nick,
+                    event.content,
+                )
+                peer.writer.write(data)
 
 
 class Connection:
