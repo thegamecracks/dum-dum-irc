@@ -62,6 +62,7 @@ class ChannelList(Frame):
         self.tree.grid(sticky="nesw")
 
         # TODO: maybe add button to refresh channels?
+        # TODO: remember last selected channel
 
         self.tree.bind("<<TreeviewSelect>>", self._on_tree_select)
 
@@ -77,10 +78,15 @@ class ChannelList(Frame):
                 return channel
 
     def refresh(self) -> None:
+        selection = self.tree.selection()
         self.tree.delete(*self.tree.get_children())
 
         for channel in self.parent.channels:
             self.tree.insert("", "end", channel.name, text=channel.name)
+
+        children = self.tree.get_children()
+        if len(selection) == 0 and len(children) > 0:
+            self.tree.selection_set(children[0])
 
     def _on_tree_select(self, event: Event) -> None:
         self.parent.messages.set_channel(self.selected_channel)
