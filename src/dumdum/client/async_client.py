@@ -48,6 +48,10 @@ class AsyncClient:
             finally:
                 await self.close()
 
+    async def run_forever(self) -> None:
+        assert self._read_task is not None
+        await self._read_task
+
     async def close(self) -> None:
         if self._writer is not None:
             self._writer.close()

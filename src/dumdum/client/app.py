@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 class TkApp(Tk):
     client: AsyncClient  # NOTE: only assigned in attempt_connection()
     _client_events: queue.Queue[ClientEvent]
+    _last_connection_exc: BaseException | None
 
     def __init__(self, event_thread: EventThread):
         super().__init__()
@@ -29,6 +30,7 @@ class TkApp(Tk):
         self._connect_lifetime_with_event_thread(event_thread)
 
         self._client_events = queue.Queue()
+        self._last_connection_exc = None
 
         self.title("Dumdum Client")
         self.geometry("640x480")
@@ -41,6 +43,7 @@ class TkApp(Tk):
 
         self.bind("<<Destroy>>", self._on_destroy)
         self.bind("<<ClientEvent>>", self._on_client_event)
+        self.bind("<<ConnectionLost>>", self._on_connection_lost)
 
     def switch_frame(self, frame: Frame) -> None:
         self.frame.destroy()
@@ -54,8 +57,15 @@ class TkApp(Tk):
 
     async def attempt_connection(self, host: str, port: int, nick: str) -> None:
         self.client = AsyncClient(nick, event_callback=self._handle_event_threadsafe)
-        async with self.client.connect(host, port):
-            await asyncio.get_running_loop().create_future()
+        try:
+            async with self.client.connect(host, port):
+                await self.client.run_forever()
+        except BaseException as e:
+            self._last_connection_exc = e
+        else:
+            self._last_connection_exc = None
+        finally:
+            self.event_generate("<<ConnectionLost>>")
 
     def _connect_lifetime_with_event_thread(self, event_thread: EventThread) -> None:
         # In our application we'll be running an asyncio event loop in
@@ -105,6 +115,22 @@ class TkApp(Tk):
 
         if isinstance(self.frame, Dispachable):
             self.frame.handle_client_event(event)
+
+    def _on_connection_lost(self, event: Event) -> None:
+        if self._last_connection_exc is not None:
+            log.error("Lost connection with server", exc_info=self._last_connection_exc)
+            messagebox.showerror("Connection Lost", str(self._last_connection_exc))
+        else:
+            log.info("Disconnected from server")
+            messagebox.showwarning(
+                "Connection Lost",
+                "We have been disconnected by the server.",
+            )
+
+        from .connect_frame import ConnectFrame
+
+        if not isinstance(self.frame, ConnectFrame):
+            self.switch_frame(ConnectFrame(self))
 
 
 def log_fut_exception(fut: concurrent.futures.Future) -> None:
