@@ -86,7 +86,7 @@ def test_send_message():
     assert server_events == [ServerEventMessageReceived(channel, content)]
 
 
-def test_nickname_validation():
+def test_conflicting_nicknames():
     hc = HighCommand()
 
     nick = "thegamecracks"
