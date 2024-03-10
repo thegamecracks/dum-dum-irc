@@ -63,7 +63,10 @@ def main():
     for channel in channels:
         hc.add_channel(channel)
 
-    asyncio.run(host_server(hc, host, port))
+    try:
+        asyncio.run(host_server(hc, host, port))
+    except KeyboardInterrupt:
+        pass
 
 
 def parse_channel(s: str) -> Channel:
@@ -179,7 +182,4 @@ class Connection:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        pass
+    main()
