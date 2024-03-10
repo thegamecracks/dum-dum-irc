@@ -44,6 +44,7 @@ class ConnectFrame(Frame):
         self._connect_bind = app.bind("<Return>", lambda event: self.do_connect())
 
         self._connection_attempt = None
+        self._destroying = False
 
     def do_connect(self) -> None:
         fut = self._connection_attempt
@@ -58,10 +59,15 @@ class ConnectFrame(Frame):
         self._connection_attempt = self.app.submit(coro)
 
         self.connect.state(["disabled"])
-        self._connection_attempt.add_done_callback(
-            lambda fut: self.connect.state(["!disabled"])
-        )
+        self._connection_attempt.add_done_callback(self._on_connection_attempt)
 
     def destroy(self) -> None:
+        self._destroying = True
         self.app.unbind("<Return>", self._connect_bind)
         super().destroy()
+
+    def _on_connection_attempt(self, fut: concurrent.futures.Future) -> None:
+        if self._destroying:
+            return
+
+        self.connect.state(["!disabled"])
