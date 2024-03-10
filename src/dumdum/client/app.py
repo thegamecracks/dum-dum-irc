@@ -129,15 +129,19 @@ class TkApp(Tk):
             self.frame.handle_client_event(event)
 
     def _on_connection_lost(self, event: Event) -> None:
-        if self._last_connection_exc is not None:
-            log.error("Lost connection with server", exc_info=self._last_connection_exc)
-            messagebox.showerror("Connection Lost", str(self._last_connection_exc))
-        else:
+        exc = self._last_connection_exc
+        if exc is None:
             log.info("Disconnected from server")
             messagebox.showwarning(
                 "Connection Lost",
                 "We have been disconnected by the server.",
             )
+        elif isinstance(exc, asyncio.CancelledError):
+            # The user wants to close the GUI
+            return
+        else:
+            log.error("Lost connection with server", exc_info=exc)
+            messagebox.showerror("Connection Lost", str(exc))
 
         from .connect_frame import ConnectFrame
 
