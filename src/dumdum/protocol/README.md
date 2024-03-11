@@ -1,7 +1,7 @@
 This contains the [Sans-IO] implementation of the Dumdum protocol.
 
-- [`client/`](client/): Implements the client-side of the protocol.
-- [`server/`](server/): Implements the server-side of the protocol.
+- [`client/`](client/): Implements the client side of the protocol.
+- [`server/`](server/): Implements the server side of the protocol.
 - [`channel.py`](channel.py): A basic channel dataclass shared between the client and server.
 - [`constants.py`](constants.py): Defines a few constants used by the protocol.
 - [`enums.py`](enums.py): Defines the message types that will be sent between the client and server.
