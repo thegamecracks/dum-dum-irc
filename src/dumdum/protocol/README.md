@@ -9,5 +9,6 @@ This contains the [Sans-IO] implementation of the Dumdum protocol.
 - [`highcommand.py`](highcommand.py): A server-side, in-memory datastore for channels and users.
 - [`interfaces.py`](interfaces.py): Defines a common interface between the client and server.
 - [`reader.py`](reader.py): Provides functions to read through bytes/bytearrays like streams.
+- [`varchar.py`](varchar.py): Provides functions to de/serialize variable-length strings.
 
 [Sans-IO]: https://sans-io.readthedocs.io/
