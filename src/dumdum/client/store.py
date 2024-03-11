@@ -2,13 +2,13 @@ import contextlib
 from typing import Any, Iterator, Self, TypeVar
 
 from dumdum.appdirs import APP_DIRS
-from dumdum.db import SQLiteConnection, run_migrations
+from dumdum.db import Connection, SQLiteConnection, run_migrations
 
 T = TypeVar("T")
 
 
 class ClientStore:
-    def __init__(self, conn: SQLiteConnection) -> None:
+    def __init__(self, conn: Connection) -> None:
         self._conn = conn
 
     @contextlib.contextmanager
