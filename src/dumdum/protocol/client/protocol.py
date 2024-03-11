@@ -1,6 +1,6 @@
 from enum import Enum
-from dumdum.protocol.channel import Channel
 
+from dumdum.protocol.channel import Channel
 from dumdum.protocol.constants import (
     MAX_LIST_CHANNEL_LENGTH_BYTES,
     MAX_MESSAGE_LENGTH,
