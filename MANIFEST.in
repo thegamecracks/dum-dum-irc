@@ -1,1 +1,2 @@
 recursive-include src README.md
+recursive-include src/dumdum/db/scripts *.sql

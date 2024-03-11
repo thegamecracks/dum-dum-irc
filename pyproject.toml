@@ -11,7 +11,10 @@ authors = [{ name = "thegamecracks" }]
 license = { text = "MIT" }
 classifiers = []
 dynamic = ["version"]
-dependencies = []
+dependencies = [
+    "importlib-resources>=6.1.3",
+    "platformdirs>=4.2.0",
+]
 
 [project.scripts]
 dumdum = "dumdum.client.__main__:main"

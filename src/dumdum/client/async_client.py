@@ -14,6 +14,7 @@ class AsyncClient:
     _reader: asyncio.StreamReader | None
     _writer: asyncio.StreamWriter | None
     _read_task: asyncio.Task | None
+    _addr: str | None
     _auth_fut: asyncio.Future[bool] | None
 
     def __init__(
@@ -29,11 +30,19 @@ class AsyncClient:
         self._reader = None
         self._writer = None
         self._read_task = None
+        self._addr = None
 
         self._auth_fut = None
 
+    @property
+    def addr(self) -> str:
+        if self._addr is None:
+            raise RuntimeError("addr is not yet defined")
+        return self._addr
+
     @contextlib.asynccontextmanager
     async def connect(self, host: str, port: int) -> AsyncIterator[Self]:
+        self._addr = f"{host}:{port}"  # FIXME: must be canonicalized
         self._reader, self._writer = await asyncio.open_connection(host, port)
         async with asyncio.TaskGroup() as tg:
             _read_coro = self._read_loop(self._reader, self._writer)

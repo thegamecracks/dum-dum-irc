@@ -2,12 +2,15 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
+from typing import Iterator
 
 from dumdum.logging import configure_logging
 
 from .app import TkApp
 from .connect_frame import ConnectFrame
 from .event_thread import EventThread
+from .store import ClientStore
 
 
 def main():
@@ -29,9 +32,18 @@ def main():
     configure_logging(verbose)
 
     with EventThread() as event_thread:
-        app = TkApp(event_thread)
+        app = TkApp(
+            event_thread=event_thread,
+            store_factory=store_factory,
+        )
         app.switch_frame(ConnectFrame(app))
         app.mainloop()
+
+
+@contextlib.contextmanager
+def store_factory() -> Iterator[ClientStore]:
+    with ClientStore.from_appdirs() as store, store.conn.transaction():
+        yield store
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import logging
 import queue
 from tkinter import Event, Tk, messagebox
 from tkinter.ttk import Frame
-from typing import Any, Awaitable, Protocol, runtime_checkable
+from typing import Any, Awaitable, ContextManager, Protocol, runtime_checkable
 
 from dumdum.protocol import (
     ClientEvent,
@@ -14,8 +14,13 @@ from dumdum.protocol import (
 
 from .async_client import AsyncClient
 from .event_thread import EventThread
+from .store import ClientStore
 
 log = logging.getLogger(__name__)
+
+
+class ClientStoreFactory(Protocol):
+    def __call__(self) -> ContextManager[ClientStore]: ...
 
 
 class TkApp(Tk):
@@ -23,10 +28,16 @@ class TkApp(Tk):
     _client_events: queue.Queue[ClientEvent]
     _last_connection_exc: BaseException | None
 
-    def __init__(self, event_thread: EventThread):
+    def __init__(
+        self,
+        event_thread: EventThread,
+        store_factory: ClientStoreFactory,
+    ):
         super().__init__()
 
         self.event_thread = event_thread
+        self.store_factory = store_factory
+
         self._connect_lifetime_with_event_thread(event_thread)
 
         self._client_events = queue.Queue()

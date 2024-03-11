@@ -5,6 +5,7 @@ import concurrent.futures
 from dataclasses import dataclass
 from tkinter import Event, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Treeview
+from typing import ContextManager
 
 from dumdum.protocol import (
     Channel,
@@ -15,6 +16,7 @@ from dumdum.protocol import (
 
 from .app import TkApp
 from .scrollable_frame import ScrollableFrame
+from .store import ClientStore
 
 
 class ChatFrame(Frame):
@@ -63,9 +65,16 @@ class ChannelList(Frame):
         self.tree.grid(sticky="nesw")
 
         # TODO: maybe add button to refresh channels?
-        # TODO: remember last selected channel
 
         self.tree.bind("<<TreeviewSelect>>", self._on_tree_select)
+
+    @property
+    def store(self) -> ContextManager[ClientStore]:
+        return self.parent.app.store_factory()
+
+    @property
+    def addr(self) -> str:
+        return self.parent.app.client.addr
 
     @property
     def selected_channel(self) -> Channel | None:
@@ -87,10 +96,18 @@ class ChannelList(Frame):
 
         children = self.tree.get_children()
         if len(selection) == 0 and len(children) > 0:
-            self.tree.selection_set(children[0])
+            with self.store as store:
+                last = store.get_last_selected_channel(self.addr, children[0])
+                self.tree.selection_set(last)
 
     def _on_tree_select(self, event: Event) -> None:
-        self.parent.messages.set_channel(self.selected_channel)
+        selected_channel = self.selected_channel
+
+        with self.store as store:
+            name = selected_channel and selected_channel.name
+            store.set_last_selected_channel(self.addr, name)
+
+        self.parent.messages.set_channel(selected_channel)
 
 
 class MessageList(ScrollableFrame):
