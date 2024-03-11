@@ -11,6 +11,11 @@ class ClientStore:
     def __init__(self, conn: SQLiteConnection) -> None:
         self.conn = conn
 
+    @contextlib.contextmanager
+    def transaction(self) -> Iterator[Self]:
+        with self.conn.transaction():
+            yield self
+
     def get_last_selected_channel(
         self,
         addr: str,

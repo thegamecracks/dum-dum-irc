@@ -68,7 +68,7 @@ def show_appdirs() -> None:
 
 @contextlib.contextmanager
 def store_factory() -> Iterator[ClientStore]:
-    with ClientStore.from_appdirs() as store, store.conn.transaction():
+    with ClientStore.from_appdirs() as store, store.transaction():
         yield store
 
 
