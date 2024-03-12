@@ -32,6 +32,12 @@ def loads(message: bytes, *, max_length: int) -> str:
 
 def dumps(message: str, *, max_length: int) -> bytes:
     message_bytes = message.encode()
+
+    length = len(message_bytes)
+    if length > max_length:
+        raise InvalidLengthError(length, max_length)
+
     byte_count = math.ceil(max_length.bit_length() / 8)
-    length = len(message_bytes).to_bytes(byte_count, byteorder="big")
-    return length + message_bytes
+    length_bytes = len(message_bytes).to_bytes(byte_count, byteorder="big")
+
+    return length_bytes + message_bytes
