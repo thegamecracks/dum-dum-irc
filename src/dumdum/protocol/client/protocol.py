@@ -31,7 +31,7 @@ class ClientState(Enum):
 class Client(Protocol):
     """The client connected to a server."""
 
-    REQUIRED_VERSION = 0
+    PROTOCOL_VERSION = 0
 
     def __init__(self, nick: str) -> None:
         self.nick = nick
@@ -47,7 +47,7 @@ class Client(Protocol):
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
         return bytes(
             ClientMessageAuthenticate(
-                version=self.REQUIRED_VERSION,
+                version=self.PROTOCOL_VERSION,
                 nick=self.nick,
             )
         )
@@ -84,7 +84,7 @@ class Client(Protocol):
     def _read_message(self, reader: Reader) -> ParsedData:
         t = ServerMessageType(reader.readexactly(1)[0])
         if t == ServerMessageType.INCOMPATIBLE_VERSION:
-            return self._parse_required_version(reader)
+            return self._parse_incompatible_version(reader)
         elif t == ServerMessageType.ACKNOWLEDGE_AUTHENTICATION:
             return self._accept_authentication(reader)
         elif t == ServerMessageType.SEND_MESSAGE:
@@ -94,10 +94,10 @@ class Client(Protocol):
 
         raise RuntimeError(f"No handler for {t}")
 
-    def _parse_required_version(self, reader: Reader) -> ParsedData:
+    def _parse_incompatible_version(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
         version = reader.readexactly(1)[0]
-        event = ClientEventIncompatibleVersion(version, self.REQUIRED_VERSION)
+        event = ClientEventIncompatibleVersion(version, self.PROTOCOL_VERSION)
         return [event], b""
 
     def _accept_authentication(self, reader: Reader) -> ParsedData:
