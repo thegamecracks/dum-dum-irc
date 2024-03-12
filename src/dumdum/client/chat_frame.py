@@ -112,7 +112,7 @@ class ChannelList(Frame):
         self.parent.messages.set_channel(selected_channel)
 
 
-class MessageList(ScrollableFrame):
+class MessageList(Frame):
     def __init__(self, parent: ChatFrame):
         super().__init__(parent)
 
@@ -123,8 +123,11 @@ class MessageList(ScrollableFrame):
 
         self.messages: list[MessageView] = []
 
+        self._scroll_frame = ScrollableFrame(self)
+        self._scroll_frame.grid(row=0, column=0, sticky="nesw")
+
     def add_message(self, message: Message) -> None:
-        widget = MessageView(self.inner, self, message)
+        widget = MessageView(self._scroll_frame.inner, self, message)
         widget.grid(row=len(self.messages), column=0, sticky="ew")
         self.messages.append(widget)
 
