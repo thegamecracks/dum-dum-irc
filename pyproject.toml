@@ -43,5 +43,6 @@ exclude_lines = [
 [tool.coverage.run]
 branch = true
 source_pkgs = ["dumdum"]
+omit = ["src/dumdum/client/*", "src/dumdum/server.py"]
 
 [tool.setuptools_scm]
