@@ -7,12 +7,14 @@ from dumdum.protocol import (
     Client,
     ClientEventAuthentication,
     ClientEventChannelsListed,
+    ClientEventIncompatibleVersion,
     ClientState,
     HighCommand,
     InvalidStateError,
     Protocol,
     Server,
     ServerEventAuthentication,
+    ServerEventIncompatibleVersion,
     ServerEventMessageReceived,
     ServerState,
 )
@@ -69,6 +71,33 @@ def test_authenticate():
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert client_events == [ClientEventAuthentication(success=True)]
     assert server_events == [ServerEventAuthentication(success=True, nick=nick)]
+
+
+def test_authenticate_incompatible_version():
+    hc = HighCommand()
+
+    nick = "thegamecracks"
+    client = Client(nick=nick)
+    server = Server(hc)
+
+    client.PROTOCOL_VERSION = server.PROTOCOL_VERSION + 1  # type: ignore
+    if client.PROTOCOL_VERSION > 255:
+        client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
+
+    assert client.PROTOCOL_VERSION != server.PROTOCOL_VERSION
+
+    client_events, server_events = communicate(client, client.authenticate(), server)
+    assert client_events == [
+        ClientEventIncompatibleVersion(
+            client_version=client.PROTOCOL_VERSION,
+            server_version=server.PROTOCOL_VERSION,
+        )
+    ]
+    assert server_events == [
+        ServerEventIncompatibleVersion(
+            version=client.PROTOCOL_VERSION,
+        )
+    ]
 
 
 def test_send_message():
