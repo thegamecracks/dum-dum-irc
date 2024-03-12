@@ -97,7 +97,9 @@ class ChannelList(Frame):
         children = self.tree.get_children()
         if len(selection) == 0 and len(children) > 0:
             with self.store as store:
-                last = store.get_last_selected_channel(self.addr, children[0])
+                last = store.get_last_selected_channel(self.addr)
+                if last is None or last not in children:
+                    last = children[0]
                 self.tree.selection_set(last)
 
     def _on_tree_select(self, event: Event) -> None:
