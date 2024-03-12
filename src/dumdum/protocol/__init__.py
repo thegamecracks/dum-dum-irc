@@ -33,4 +33,4 @@ from .errors import (
 )
 from .highcommand import HighCommand
 from .interfaces import Protocol
-from .reader import Reader, bytearray_reader
+from .reader import Reader, bytearray_reader, byte_reader
