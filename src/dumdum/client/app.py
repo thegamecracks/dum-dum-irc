@@ -13,6 +13,7 @@ from dumdum.protocol import (
 )
 
 from .async_client import AsyncClient
+from .errors import AuthenticationFailedError
 from .event_thread import EventThread
 from .store import ClientStore
 
@@ -149,6 +150,12 @@ class TkApp(Tk):
             )
         elif isinstance(exc, asyncio.CancelledError):
             # The user wants to close the GUI
+            return
+        elif (
+            isinstance(exc, BaseExceptionGroup)
+            and exc.subgroup(AuthenticationFailedError) is not None
+        ):
+            # Handled via ClientEventAuthentication
             return
         else:
             log.error("Lost connection with server", exc_info=exc)

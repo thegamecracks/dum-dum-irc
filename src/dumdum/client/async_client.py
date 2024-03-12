@@ -9,6 +9,8 @@ from dumdum.protocol import (
     ClientEventIncompatibleVersion,
 )
 
+from .errors import AuthenticationFailedError
+
 
 class AsyncClient:
     _reader: asyncio.StreamReader | None
@@ -51,7 +53,7 @@ class AsyncClient:
             try:
                 success = await self._handshake()
                 if not success:
-                    raise RuntimeError("Could not authenticate with server")
+                    raise AuthenticationFailedError()
 
                 yield self
             finally:
