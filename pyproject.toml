@@ -22,6 +22,7 @@ dumdum-server = "dumdum.server:main"
 
 [project.optional-dependencies]
 tests = [
+    "coverage>=7.4.3",
     "pytest>=8.0.2",
 ]
 
@@ -30,3 +31,17 @@ tests = [
 [project.urls]
 "Homepage" = "https://github.com/thegamecracks/dum-dum-irc"
 "Issue Tracker" = "https://github.com/thegamecracks/dum-dum-irc/issues"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if (typing\\.)?TYPE_CHECKING:",
+    "if __name__ == \"__main__\":",
+    "\\s*\\.\\.\\.$",
+    "raise NotImplementedError",
+    "def __repr__",
+]
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["dumdum"]
