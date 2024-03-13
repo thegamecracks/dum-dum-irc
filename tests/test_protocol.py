@@ -11,6 +11,7 @@ from dumdum.protocol import (
     ClientEventMessagesListed,
     ClientState,
     InvalidStateError,
+    MalformedDataError,
     Message,
     Protocol,
     Server,
@@ -207,3 +208,14 @@ def test_list_messages():
     server_events, client_events = communicate(server, data, client)
     assert server_events == []
     assert client_events == [ClientEventMessagesListed(messages)]
+
+
+def test_invalid_message_type():
+    client = Client("thegamecracks")
+    server = Server()
+
+    with pytest.raises(MalformedDataError):
+        client.receive_bytes(b"\xff")
+
+    with pytest.raises(MalformedDataError):
+        server.receive_bytes(b"\xff")

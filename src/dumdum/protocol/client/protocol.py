@@ -6,7 +6,7 @@ from dumdum.protocol.constants import (
     MAX_LIST_MESSAGE_LENGTH_BYTES,
 )
 from dumdum.protocol.enums import ServerMessageType
-from dumdum.protocol.errors import InvalidStateError
+from dumdum.protocol.errors import InvalidStateError, MalformedDataError
 from dumdum.protocol.interfaces import Protocol
 from dumdum.protocol.message import Message
 from dumdum.protocol.reader import Reader, byte_reader, bytearray_reader
@@ -104,7 +104,12 @@ class Client(Protocol):
         return full_events, bytes(full_outgoing)
 
     def _read_message(self, reader: Reader) -> ParsedData:
-        t = ServerMessageType(reader.readexactly(1)[0])
+        n = reader.readexactly(1)[0]
+        try:
+            t = ServerMessageType(n)
+        except ValueError:
+            raise MalformedDataError(f"Unknown message type {n}") from None
+
         if t == ServerMessageType.INCOMPATIBLE_VERSION:
             return self._parse_incompatible_version(reader)
         elif t == ServerMessageType.ACKNOWLEDGE_AUTHENTICATION:
