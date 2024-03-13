@@ -219,3 +219,21 @@ def test_invalid_message_type():
 
     with pytest.raises(MalformedDataError):
         server.receive_bytes(b"\xff")
+
+
+def test_unicode_decode_error():
+    client = Client("thegamecracks")
+    server = Server()
+
+    communicate(client, client.authenticate(), server)
+    communicate(server, server.authenticate(success=True), client)
+
+    with pytest.raises(MalformedDataError):
+        # LIST_CHANNELS, Channel name \N{EYES} but missing last 3 bytes
+        data = b"\x03\x00\x02\x01\xf0"
+        client.receive_bytes(data)
+
+    with pytest.raises(MalformedDataError):
+        # SEND_MESSAGE, Channel name \N{EYES} but missing last 3 bytes
+        data = b"\x01\x01\xf0"
+        server.receive_bytes(data)
