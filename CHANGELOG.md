@@ -6,11 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-Several breaking changes were made to the Sans I/O protocol implementation,
-but not to the protocol itself. `Server` no longer takes a `HighCommand`
-instance. I/O wrappers will now have to manage their own user state
-and manually send the channel list upon receiving the new event,
-`ServerEventListChannels`.
+Several breaking changes were made to the protocol and the Sans I/O protocol
+implementation. `Server` no longer takes a `HighCommand` instance.
+I/O wrappers will now have to manage their own user state and manually
+send the channel list upon receiving the new event, `ServerEventListChannels`.
+Servers can now also send a list of messages to their clients,
+usually after receiving `ServerEventListMessages`.
 
 ### Added
 
@@ -18,14 +19,25 @@ and manually send the channel list upon receiving the new event,
 - `Server.acknowledge_authentication()` method
 - `Server.list_channels()` method
 - `ServerEventListChannels` type
+- `ClientEventMessagesListed` type
+- `ClientMessageListMessages` type
+- `ServerEventListMessages` type
+- `ServerMessageListMessages` type
+- `Message` dataclass with ID field
+- Message cache to `HighCommand`
+- `Reader.read_bigint()` method
+- `snowflake.create_snowflake()` function
 
 ### Changed
 
+- Bump protocol version from `0` to `1`
 - Rename `Client.REQUIRED_VERSION` to `Client.PROTOCOL_VERSION`
 - Only accept channel name in `Server.send_message()` method
 - Replace `ServerMessagePost.channel` with `.channel_name`
 - Replace `ServerEventMessageReceived.channel` with `.channel_name`
-- Replace `ClientEventMessageReceived.channel` with `.channel_name`
+- Replace `ClientEventMessageReceived` fields with one message field
+- Replace `ServerMessagePost` fields with one message field
+- Replace `Server.send_message()` parameters with one message parameter
 
 ### Removed
 
