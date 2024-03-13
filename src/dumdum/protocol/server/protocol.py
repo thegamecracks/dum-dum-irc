@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Sequence
 
 from dumdum.protocol.channel import Channel
 from dumdum.protocol.constants import (
@@ -8,7 +9,6 @@ from dumdum.protocol.constants import (
 )
 from dumdum.protocol.enums import ClientMessageType
 from dumdum.protocol.errors import InvalidStateError
-from dumdum.protocol.highcommand import HighCommand
 from dumdum.protocol.interfaces import Protocol
 from dumdum.protocol.reader import Reader, bytearray_reader
 
@@ -16,6 +16,7 @@ from .events import (
     ServerEvent,
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
+    ServerEventListChannels,
     ServerEventMessageReceived,
 )
 from .messages import (
@@ -38,11 +39,7 @@ class Server(Protocol):
 
     PROTOCOL_VERSION = 0
 
-    nick: str | None
-
-    def __init__(self, hc: HighCommand) -> None:
-        self.hc = hc
-        self.nick = None
+    def __init__(self) -> None:
         self._buffer = bytearray()
         self._state = ServerState.AWAITING_AUTHENTICATION
 
@@ -50,13 +47,20 @@ class Server(Protocol):
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
 
-    def send_message(self, channel: Channel, nick: str, content: str) -> bytes:
-        self._assert_state(ServerState.READY)
-        return bytes(ServerMessagePost(channel, nick, content))
+    def acknowledge_authentication(self, *, success: bool) -> bytes:
+        self._assert_state(ServerState.AWAITING_AUTHENTICATION)
 
-    def close(self) -> None:
-        if self.nick is not None:
-            self.hc.remove_user(self.nick)
+        if success:
+            self._state = ServerState.READY
+
+        return bytes(ServerMessageAcknowledgeAuthentication(success))
+
+    def send_message(self, channel_name: str, nick: str, content: str) -> bytes:
+        self._assert_state(ServerState.READY)
+        return bytes(ServerMessagePost(channel_name, nick, content))
+
+    def list_channels(self, channels: Sequence[Channel]) -> bytes:
+        return bytes(ServerMessageListChannels(channels))
 
     def _assert_state(self, *states: ServerState) -> None:
         if self._state not in states:
@@ -101,39 +105,19 @@ class Server(Protocol):
             response = ServerMessageSendIncompatibleVersion(self.PROTOCOL_VERSION)
             return [event], bytes(response)
 
-        success = True
-
-        user = self.hc.get_user(nick)
-        if user is not None:
-            # TODO: maybe add message type for taken nickname
-            success = False
-
-        if success:
-            self.hc.add_user(nick)
-            self.nick = nick
-            self._state = ServerState.READY
-
-        event = ServerEventAuthentication(success=success, nick=nick)
-        response = ServerMessageAcknowledgeAuthentication(success)
-        return [event], bytes(response)
+        event = ServerEventAuthentication(nick=nick)
+        return [event], b""
 
     def _send_message(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.READY)
         channel_name = reader.read_varchar(max_length=MAX_CHANNEL_NAME_LENGTH)
         content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
 
-        channel = self.hc.get_channel(channel_name)
-        if channel is None:
-            # TODO: maybe add event for invalid channel
-            return [], b""
-
-        event = ServerEventMessageReceived(channel, content)
+        event = ServerEventMessageReceived(channel_name, content)
         # TODO: broadcast message to all users
-        assert self.nick is not None
         return [event], b""
 
     def _list_channels(self, reader: Reader) -> ParsedData:
-        # TODO: maybe add event for listing channels
         self._assert_state(ServerState.READY)
-        response = ServerMessageListChannels(self.hc.channels)
-        return [], bytes(response)
+        event = ServerEventListChannels()
+        return [event], b""

@@ -28,7 +28,7 @@ class ClientEventAuthentication(ClientEvent):
 class ClientEventMessageReceived(ClientEvent):
     """The server broadcasted a message to the client."""
 
-    channel: Channel
+    channel_name: str
     nick: str
     content: str
 

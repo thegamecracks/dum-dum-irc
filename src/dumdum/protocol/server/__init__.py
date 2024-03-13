@@ -2,6 +2,7 @@ from .events import (
     ServerEvent,
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
+    ServerEventListChannels,
     ServerEventMessageReceived,
 )
 from .messages import (

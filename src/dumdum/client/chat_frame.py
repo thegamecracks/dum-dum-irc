@@ -48,8 +48,14 @@ class ChatFrame(Frame):
             self.channel_list.refresh()
         elif isinstance(event, ClientEventMessageReceived):
             message = self.message_cache.add_message_from_event(event)
-            if event.channel == self.channel_list.selected_channel:
+            channel = self.get_channel(event.channel_name)
+            if channel == self.channel_list.selected_channel:
                 self.messages.add_message(message)
+
+    def get_channel(self, name: str) -> Channel | None:
+        for channel in self.channels:
+            if channel.name == name:
+                return channel
 
 
 class ChannelList(Frame):
@@ -82,10 +88,7 @@ class ChannelList(Frame):
         if len(selection) < 1:
             return None
 
-        name = selection[0]
-        for channel in self.parent.channels:
-            if channel.name == name:
-                return channel
+        return self.parent.get_channel(selection[0])
 
     def refresh(self) -> None:
         selection = self.tree.selection()
@@ -171,12 +174,12 @@ class MessageCache:
     def __init__(self) -> None:
         self.channel_messages: dict[str, list[Message]] = collections.defaultdict(list)
 
-    def add_message(self, channel: Channel, message: Message) -> None:
-        self.channel_messages[channel.name].append(message)
+    def add_message(self, channel_name: str, message: Message) -> None:
+        self.channel_messages[channel_name].append(message)
 
     def add_message_from_event(self, event: ClientEventMessageReceived) -> Message:
         message = Message(event.nick, event.content)
-        self.add_message(event.channel, message)
+        self.add_message(event.channel_name, message)
         return message
 
     def get_messages(self, channel: Channel) -> list[Message]:

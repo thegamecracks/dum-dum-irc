@@ -4,6 +4,7 @@ from typing import Sequence
 from dumdum.protocol import varchar
 from dumdum.protocol.channel import Channel
 from dumdum.protocol.constants import (
+    MAX_CHANNEL_NAME_LENGTH,
     MAX_LIST_CHANNEL_LENGTH_BYTES,
     MAX_MESSAGE_LENGTH,
     MAX_NICK_LENGTH,
@@ -39,7 +40,7 @@ class ServerMessageAcknowledgeAuthentication:
 
 @dataclass
 class ServerMessagePost:
-    channel: Channel
+    channel_name: str
     nick: str
     content: str
 
@@ -47,7 +48,7 @@ class ServerMessagePost:
         return bytes(
             [
                 ServerMessageType.SEND_MESSAGE.value,
-                *bytes(self.channel),
+                *varchar.dumps(self.channel_name, max_length=MAX_CHANNEL_NAME_LENGTH),
                 *varchar.dumps(self.nick, max_length=MAX_NICK_LENGTH),
                 *varchar.dumps(self.content, max_length=MAX_MESSAGE_LENGTH),
             ]

@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from dumdum.protocol.channel import Channel
-
 
 @dataclass
 class ServerEvent:
@@ -19,7 +17,6 @@ class ServerEventIncompatibleVersion(ServerEvent):
 class ServerEventAuthentication(ServerEvent):
     """The client attempted to authenticate with the server."""
 
-    success: bool
     nick: str
 
 
@@ -27,5 +24,10 @@ class ServerEventAuthentication(ServerEvent):
 class ServerEventMessageReceived(ServerEvent):
     """The client sent a message to the server."""
 
-    channel: Channel
+    channel_name: str
     content: str
+
+
+@dataclass
+class ServerEventListChannels(ServerEvent):
+    """The client requested a list of channels."""

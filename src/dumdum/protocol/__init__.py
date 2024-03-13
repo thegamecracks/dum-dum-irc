@@ -15,6 +15,7 @@ from .server import (
     ServerEvent,
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
+    ServerEventListChannels,
     ServerEventMessageReceived,
     ServerMessageAcknowledgeAuthentication,
     ServerMessageListChannels,

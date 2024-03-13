@@ -2,6 +2,7 @@ from enum import Enum
 
 from dumdum.protocol.channel import Channel
 from dumdum.protocol.constants import (
+    MAX_CHANNEL_NAME_LENGTH,
     MAX_LIST_CHANNEL_LENGTH_BYTES,
     MAX_MESSAGE_LENGTH,
     MAX_NICK_LENGTH,
@@ -112,10 +113,10 @@ class Client(Protocol):
 
     def _parse_message(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.READY)
-        channel = Channel.from_reader(reader)
+        channel_name = reader.read_varchar(max_length=MAX_CHANNEL_NAME_LENGTH)
         nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
         content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
-        event = ClientEventMessageReceived(channel, nick, content)
+        event = ClientEventMessageReceived(channel_name, nick, content)
         return [event], b""
 
     def _parse_channel_list(self, reader: Reader) -> ParsedData:

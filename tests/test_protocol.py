@@ -15,6 +15,7 @@ from dumdum.protocol import (
     Server,
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
+    ServerEventListChannels,
     ServerEventMessageReceived,
     ServerState,
 )
@@ -62,23 +63,24 @@ def assert_event_order(events: Sequence[object], *expected_events: Type[object])
 
 
 def test_authenticate():
-    hc = HighCommand()
-
     nick = "thegamecracks"
     client = Client(nick=nick)
-    server = Server(hc)
+    server = Server()
 
     client_events, server_events = communicate(client, client.authenticate(), server)
+    assert client_events == []
+    assert server_events == [ServerEventAuthentication(nick=nick)]
+
+    data = server.acknowledge_authentication(success=True)
+    server_events, client_events = communicate(server, data, client)
     assert client_events == [ClientEventAuthentication(success=True)]
-    assert server_events == [ServerEventAuthentication(success=True, nick=nick)]
+    assert server_events == []
 
 
 def test_authenticate_incompatible_version():
-    hc = HighCommand()
-
     nick = "thegamecracks"
     client = Client(nick=nick)
-    server = Server(hc)
+    server = Server()
 
     client.PROTOCOL_VERSION = server.PROTOCOL_VERSION + 1  # type: ignore
     if client.PROTOCOL_VERSION > 255:
@@ -103,46 +105,24 @@ def test_authenticate_incompatible_version():
 def test_send_message():
     nick = "thegamecracks"
     content = "Hello world!"
-
-    hc = HighCommand()
-    channel = Channel("general")
-    hc.add_channel(channel)
+    channel_name = "general"
 
     client = Client(nick=nick)
-    server = Server(hc)
+    server = Server()
+
     communicate(client, client.authenticate(), server)
+    communicate(server, server.acknowledge_authentication(success=True), client)
 
     client_events, server_events = communicate(
         client,
-        client.send_message(channel.name, content),
+        client.send_message(channel_name, content),
         server,
     )
     assert client_events == []
-    assert server_events == [ServerEventMessageReceived(channel, content)]
-
-
-def test_conflicting_nicknames():
-    hc = HighCommand()
-
-    nick = "thegamecracks"
-    c1 = Client(nick=nick)
-    s1 = Server(hc)
-    c2 = Client(nick=nick)
-    s2 = Server(hc)
-
-    c1_events, s1_events = communicate(c1, c1.authenticate(), s1)
-    c2_events, s2_events = communicate(c2, c2.authenticate(), s2)
-
-    assert c1_events == [ClientEventAuthentication(success=True)]
-    assert s1_events == [ServerEventAuthentication(success=True, nick=nick)]
-
-    assert c2_events == [ClientEventAuthentication(success=False)]
-    assert s2_events == [ServerEventAuthentication(success=False, nick=nick)]
+    assert server_events == [ServerEventMessageReceived(channel_name, content)]
 
 
 def test_list_channels():
-    hc = HighCommand()
-
     channels = [
         Channel("announcements"),
         Channel("general"),
@@ -150,27 +130,30 @@ def test_list_channels():
         Channel("coding-lounge"),
         Channel("fishing-trips"),
     ]
-    for channel in channels:
-        hc.add_channel(channel)
 
     client = Client(nick="thegamecracks")
-    server = Server(hc)
-    communicate(client, client.authenticate(), server)
+    server = Server()
 
-    client_events, _ = communicate(client, client.list_channels(), server)
+    communicate(client, client.authenticate(), server)
+    communicate(server, server.acknowledge_authentication(success=True), client)
+
+    client_events, server_events = communicate(client, client.list_channels(), server)
+    assert client_events == []
+    assert server_events == [ServerEventListChannels()]
+
+    data = server.list_channels(channels)
+    server_events, client_events = communicate(server, data, client)
     assert client_events == [ClientEventChannelsListed(channels)]
+    assert server_events == []
 
 
 def test_unauthenticated_send_message():
     nick = "thegamecracks"
     content = "Hello world!"
-
-    hc = HighCommand()
     channel = Channel("general")
-    hc.add_channel(channel)
 
     client = Client(nick=nick)
-    server = Server(hc)
+    server = Server()
 
     with pytest.raises(InvalidStateError):
         client.send_message(channel.name, content)
@@ -185,19 +168,16 @@ def test_unauthenticated_send_message():
 def test_unauthenticated_server_send_message():
     nick = "thegamecracks"
     content = "Hello world!"
-
-    hc = HighCommand()
     channel = Channel("general")
-    hc.add_channel(channel)
 
     client = Client(nick=nick)
-    server = Server(hc)
+    server = Server()
 
     with pytest.raises(InvalidStateError):
-        server.send_message(channel, nick, content)
+        server.send_message(channel.name, nick, content)
 
     server._state = ServerState.READY
-    data = server.send_message(channel, nick, content)
+    data = server.send_message(channel.name, nick, content)
 
     with pytest.raises(InvalidStateError):
         communicate(server, data, client)

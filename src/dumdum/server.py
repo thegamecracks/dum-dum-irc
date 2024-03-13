@@ -14,6 +14,8 @@ from dumdum.protocol import (
     InvalidStateError,
     Server,
     ServerEvent,
+    ServerEventAuthentication,
+    ServerEventListChannels,
     ServerEventMessageReceived,
 )
 
@@ -115,10 +117,10 @@ class Manager:
             log.info("Connection %s has disconnected", addr)
             writer.close()
             await writer.wait_closed()
-            self.connections.remove(connection)
+            self._close_connection(connection)
 
     def _create_server(self) -> Server:
-        return Server(self.hc)
+        return Server()
 
     def _handle_events(self, conn: Connection, events: list[ServerEvent]) -> None:
         for event in events:
@@ -131,26 +133,57 @@ class Manager:
             conn.writer.get_extra_info("peername"),
         )
 
-        if isinstance(event, ServerEventMessageReceived):
+        if isinstance(event, ServerEventAuthentication):
+            self._authenticate(conn, event)
+        elif isinstance(event, ServerEventMessageReceived):
             self._broadcast_message(conn, event)
+        elif isinstance(event, ServerEventListChannels):
+            self._list_channels(conn, event)
+
+    def _authenticate(self, conn: Connection, event: ServerEventAuthentication) -> None:
+        user = self.hc.get_user(event.nick)
+        if user is None:
+            self.hc.add_user(event.nick)
+            conn.nick = event.nick
+            success = True
+        else:
+            success = False
+
+        data = conn.server.acknowledge_authentication(success=success)
+        conn.writer.write(data)
 
     def _broadcast_message(
         self,
         conn: Connection,
         event: ServerEventMessageReceived,
     ) -> None:
-        assert conn.server.nick is not None
+        assert conn.nick is not None
+
+        if self.hc.get_channel(event.channel_name) is None:
+            return
+
         for peer in self.connections:
             with contextlib.suppress(InvalidStateError):
                 data = peer.server.send_message(
-                    event.channel,
-                    conn.server.nick,
+                    event.channel_name,
+                    conn.nick,
                     event.content,
                 )
                 peer.writer.write(data)
 
+    def _list_channels(self, conn: Connection, event: ServerEventListChannels) -> None:
+        data = conn.server.list_channels(self.hc.channels)
+        conn.writer.write(data)
+
+    def _close_connection(self, conn: Connection) -> None:
+        self.connections.remove(conn)
+        if conn.nick is not None:
+            self.hc.remove_user(conn.nick)
+
 
 class Connection:
+    nick: str | None
+
     def __init__(
         self,
         manager: Manager,
@@ -163,19 +196,18 @@ class Connection:
         self.writer = writer
         self.server = server
 
-    async def communicate(self) -> None:
-        try:
-            while True:
-                data = await self.reader.read(1024)
-                if len(data) == 0:
-                    break
+        self.nick = None
 
-                events, outgoing = self.server.receive_bytes(data)
-                self.writer.write(outgoing)
-                self._handle_events(events)
-                await self.writer.drain()  # exert backpressure
-        finally:
-            self.server.close()
+    async def communicate(self) -> None:
+        while True:
+            data = await self.reader.read(1024)
+            if len(data) == 0:
+                break
+
+            events, outgoing = self.server.receive_bytes(data)
+            self.writer.write(outgoing)
+            self._handle_events(events)
+            await self.writer.drain()  # exert backpressure
 
     def _handle_events(self, events: list[ServerEvent]) -> None:
         self.manager._handle_events(self, events)
