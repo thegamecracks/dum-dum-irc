@@ -11,6 +11,7 @@ from dumdum.protocol import (
     ClientEvent,
     ClientEventChannelsListed,
     ClientEventMessageReceived,
+    ClientEventMessagesListed,
     Message,
 )
 
@@ -46,11 +47,22 @@ class ChatFrame(Frame):
             self.channels.clear()
             self.channels.extend(event.channels)
             self.channel_list.refresh()
+
+            for channel in event.channels:
+                coro = self.app.client.list_messages(channel.name)
+                self.app.submit(coro)
+
         elif isinstance(event, ClientEventMessageReceived):
-            self.message_cache.add_message(event.message)
-            channel = self.get_channel(event.message.channel_name)
-            if channel == self.channel_list.selected_channel:
-                self.messages.add_message(event.message)
+            self.add_message(event.message)
+        elif isinstance(event, ClientEventMessagesListed):
+            for message in event.messages:
+                self.add_message(message)
+
+    def add_message(self, message: Message) -> None:
+        self.message_cache.add_message(message)
+        channel = self.get_channel(message.channel_name)
+        if channel == self.channel_list.selected_channel:
+            self.messages.add_message(message)
 
     def get_channel(self, name: str) -> Channel | None:
         for channel in self.channels:

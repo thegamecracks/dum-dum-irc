@@ -27,8 +27,24 @@ class HighCommand:
     def remove_channel(self, name: str) -> Channel | None:
         return self._channels.pop(name, None)
 
-    def get_messages(self, channel_name: str) -> Sequence[Message]:
-        return self._messages[channel_name]
+    def get_messages(
+        self,
+        channel_name: str,
+        *,
+        before: int | None = None,
+        after: int | None = None,
+    ) -> Sequence[Message]:
+        messages = self._messages[channel_name]
+
+        if before is not None:
+            i = bisect.bisect_left(messages, before, key=lambda m: m.id)
+            messages = messages[i:]
+
+        if after is not None:
+            i = bisect.bisect_right(messages, after, key=lambda m: m.id)
+            messages = messages[:i]
+
+        return messages[-100:]
 
     def add_message(self, message: Message) -> None:
         messages = self._messages[message.channel_name]

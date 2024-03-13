@@ -76,6 +76,16 @@ class AsyncClient:
         data = self._protocol.list_channels()
         await self._send_and_drain(data)
 
+    async def list_messages(
+        self,
+        channel_name: str,
+        *,
+        before: int | None = None,
+        after: int | None = None,
+    ) -> None:
+        data = self._protocol.list_messages(channel_name, before=before, after=after)
+        await self._send_and_drain(data)
+
     async def _read_loop(
         self,
         reader: asyncio.StreamReader,

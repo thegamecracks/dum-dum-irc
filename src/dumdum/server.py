@@ -17,6 +17,7 @@ from dumdum.protocol import (
     ServerEvent,
     ServerEventAuthentication,
     ServerEventListChannels,
+    ServerEventListMessages,
     ServerEventMessageReceived,
     create_snowflake,
 )
@@ -141,6 +142,8 @@ class Manager:
             self._broadcast_message(conn, event)
         elif isinstance(event, ServerEventListChannels):
             self._list_channels(conn, event)
+        elif isinstance(event, ServerEventListMessages):
+            self._list_messages(conn, event)
 
     def _authenticate(self, conn: Connection, event: ServerEventAuthentication) -> None:
         user = self.hc.get_user(event.nick)
@@ -179,6 +182,15 @@ class Manager:
 
     def _list_channels(self, conn: Connection, event: ServerEventListChannels) -> None:
         data = conn.server.list_channels(self.hc.channels)
+        conn.writer.write(data)
+
+    def _list_messages(self, conn: Connection, event: ServerEventListMessages) -> None:
+        messages = self.hc.get_messages(
+            event.channel_name,
+            before=event.before,
+            after=event.after,
+        )
+        data = conn.server.list_messages(messages)
         conn.writer.write(data)
 
     def _close_connection(self, conn: Connection) -> None:
