@@ -100,7 +100,7 @@ class Server(Protocol):
         elif t == ClientMessageType.LIST_MESSAGES:
             return self._list_messages(reader)
 
-        raise RuntimeError(f"No handler for {t}")
+        raise RuntimeError(f"No handler for {t}")  # pragma: no cover
 
     def _authenticate(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.AWAITING_AUTHENTICATION)

@@ -116,7 +116,7 @@ class Client(Protocol):
         elif t == ServerMessageType.LIST_MESSAGES:
             return self._parse_message_list(reader)
 
-        raise RuntimeError(f"No handler for {t}")
+        raise RuntimeError(f"No handler for {t}")  # pragma: no cover
 
     def _parse_incompatible_version(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
