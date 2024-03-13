@@ -74,7 +74,7 @@ def test_authenticate():
     assert client_events == []
     assert server_events == [ServerEventAuthentication(nick=nick)]
 
-    data = server.acknowledge_authentication(success=True)
+    data = server.authenticate(success=True)
     server_events, client_events = communicate(server, data, client)
     assert client_events == [ClientEventAuthentication(success=True)]
     assert server_events == []
@@ -114,7 +114,7 @@ def test_send_message():
     server = Server()
 
     communicate(client, client.authenticate(), server)
-    communicate(server, server.acknowledge_authentication(success=True), client)
+    communicate(server, server.authenticate(success=True), client)
 
     client_events, server_events = communicate(
         client,
@@ -138,7 +138,7 @@ def test_list_channels():
     server = Server()
 
     communicate(client, client.authenticate(), server)
-    communicate(server, server.acknowledge_authentication(success=True), client)
+    communicate(server, server.authenticate(success=True), client)
 
     client_events, server_events = communicate(client, client.list_channels(), server)
     assert client_events == []
@@ -194,7 +194,7 @@ def test_list_messages():
     server = Server()
 
     communicate(client, client.authenticate(), server)
-    communicate(server, server.acknowledge_authentication(success=True), client)
+    communicate(server, server.authenticate(success=True), client)
 
     before = 1
     after = 2

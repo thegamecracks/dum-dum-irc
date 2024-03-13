@@ -50,7 +50,7 @@ class Server(Protocol):
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
 
-    def acknowledge_authentication(self, *, success: bool) -> bytes:
+    def authenticate(self, *, success: bool) -> bytes:
         self._assert_state(ServerState.AWAITING_AUTHENTICATION)
 
         if success:

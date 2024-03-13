@@ -154,7 +154,7 @@ class Manager:
         else:
             success = False
 
-        data = conn.server.acknowledge_authentication(success=success)
+        data = conn.server.authenticate(success=success)
         conn.writer.write(data)
 
     def _broadcast_message(

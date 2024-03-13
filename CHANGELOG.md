@@ -16,7 +16,7 @@ usually after receiving `ServerEventListMessages`.
 ### Added
 
 - More test coverage of the protocol
-- `Server.acknowledge_authentication()` method
+- `Server.authenticate()` method
 - `Server.list_channels()` method
 - `ServerEventListChannels` type
 - `ClientEventMessagesListed` type
