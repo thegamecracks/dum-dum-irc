@@ -1,3 +1,12 @@
+# Keeping a Changelog
+
+When making noteworthy changes like features, bugfixes, or deprecations,
+entries should be added to the `[Unreleased]` section in [CHANGELOG.md].
+This can be done in its own commit or as part of the commit making
+the relevant changes.
+
+[CHANGELOG.md]: /CHANGELOG.md
+
 # Python Style Guide
 
 - Code should follow [PEP 8] where possible unless excempted by this guide
