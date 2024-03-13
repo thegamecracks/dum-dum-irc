@@ -34,6 +34,10 @@ class Reader:
 
         return data
 
+    def read_bigint(self) -> int:
+        data = self.readexactly(8)
+        return int.from_bytes(data, byteorder="big")
+
     def read_varchar(self, *, max_length: int) -> str:
         return varchar.load(self, max_length=max_length)
 

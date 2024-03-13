@@ -2,7 +2,6 @@ from __future__ import annotations
 import collections
 
 import concurrent.futures
-from dataclasses import dataclass
 from tkinter import Event, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Treeview
 from typing import ContextManager
@@ -12,6 +11,7 @@ from dumdum.protocol import (
     ClientEvent,
     ClientEventChannelsListed,
     ClientEventMessageReceived,
+    Message,
 )
 
 from .app import TkApp
@@ -47,10 +47,10 @@ class ChatFrame(Frame):
             self.channels.extend(event.channels)
             self.channel_list.refresh()
         elif isinstance(event, ClientEventMessageReceived):
-            message = self.message_cache.add_message_from_event(event)
-            channel = self.get_channel(event.channel_name)
+            self.message_cache.add_message(event.message)
+            channel = self.get_channel(event.message.channel_name)
             if channel == self.channel_list.selected_channel:
-                self.messages.add_message(message)
+                self.messages.add_message(event.message)
 
     def get_channel(self, name: str) -> Channel | None:
         for channel in self.channels:
@@ -164,23 +164,12 @@ class MessageView(Frame):
         self.content.grid(row=1, column=0, sticky="ew")
 
 
-@dataclass
-class Message:
-    nick: str
-    content: str
-
-
 class MessageCache:
     def __init__(self) -> None:
         self.channel_messages: dict[str, list[Message]] = collections.defaultdict(list)
 
-    def add_message(self, channel_name: str, message: Message) -> None:
-        self.channel_messages[channel_name].append(message)
-
-    def add_message_from_event(self, event: ClientEventMessageReceived) -> Message:
-        message = Message(event.nick, event.content)
-        self.add_message(event.channel_name, message)
-        return message
+    def add_message(self, message: Message) -> None:
+        self.channel_messages[message.channel_name].append(message)
 
     def get_messages(self, channel: Channel) -> list[Message]:
         messages = self.channel_messages.get(channel.name)

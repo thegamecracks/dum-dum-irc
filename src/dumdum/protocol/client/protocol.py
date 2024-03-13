@@ -1,15 +1,11 @@
 from enum import Enum
 
 from dumdum.protocol.channel import Channel
-from dumdum.protocol.constants import (
-    MAX_CHANNEL_NAME_LENGTH,
-    MAX_LIST_CHANNEL_LENGTH_BYTES,
-    MAX_MESSAGE_LENGTH,
-    MAX_NICK_LENGTH,
-)
+from dumdum.protocol.constants import MAX_LIST_CHANNEL_LENGTH_BYTES
 from dumdum.protocol.enums import ServerMessageType
 from dumdum.protocol.errors import InvalidStateError
 from dumdum.protocol.interfaces import Protocol
+from dumdum.protocol.message import Message
 from dumdum.protocol.reader import Reader, byte_reader, bytearray_reader
 
 from .events import (
@@ -19,7 +15,11 @@ from .events import (
     ClientEventIncompatibleVersion,
     ClientEventMessageReceived,
 )
-from .messages import ClientMessageAuthenticate, ClientMessageListChannels, ClientMessagePost
+from .messages import (
+    ClientMessageAuthenticate,
+    ClientMessageListChannels,
+    ClientMessagePost,
+)
 
 ParsedData = tuple[list[ClientEvent], bytes]
 
@@ -32,7 +32,7 @@ class ClientState(Enum):
 class Client(Protocol):
     """The client connected to a server."""
 
-    PROTOCOL_VERSION = 0
+    PROTOCOL_VERSION = 1
 
     def __init__(self, nick: str) -> None:
         self.nick = nick
@@ -113,10 +113,8 @@ class Client(Protocol):
 
     def _parse_message(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.READY)
-        channel_name = reader.read_varchar(max_length=MAX_CHANNEL_NAME_LENGTH)
-        nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
-        content = reader.read_varchar(max_length=MAX_MESSAGE_LENGTH)
-        event = ClientEventMessageReceived(channel_name, nick, content)
+        message = Message.from_reader(reader)
+        event = ClientEventMessageReceived(message)
         return [event], b""
 
     def _parse_channel_list(self, reader: Reader) -> ParsedData:

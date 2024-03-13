@@ -1,15 +1,10 @@
 from dataclasses import dataclass
 from typing import Sequence
 
-from dumdum.protocol import varchar
 from dumdum.protocol.channel import Channel
-from dumdum.protocol.constants import (
-    MAX_CHANNEL_NAME_LENGTH,
-    MAX_LIST_CHANNEL_LENGTH_BYTES,
-    MAX_MESSAGE_LENGTH,
-    MAX_NICK_LENGTH,
-)
+from dumdum.protocol.constants import MAX_LIST_CHANNEL_LENGTH_BYTES
 from dumdum.protocol.enums import ServerMessageType
+from dumdum.protocol.message import Message
 
 
 @dataclass
@@ -40,17 +35,13 @@ class ServerMessageAcknowledgeAuthentication:
 
 @dataclass
 class ServerMessagePost:
-    channel_name: str
-    nick: str
-    content: str
+    message: Message
 
     def __bytes__(self) -> bytes:
         return bytes(
             [
                 ServerMessageType.SEND_MESSAGE.value,
-                *varchar.dumps(self.channel_name, max_length=MAX_CHANNEL_NAME_LENGTH),
-                *varchar.dumps(self.nick, max_length=MAX_NICK_LENGTH),
-                *varchar.dumps(self.content, max_length=MAX_MESSAGE_LENGTH),
+                *bytes(self.message),
             ]
         )
 

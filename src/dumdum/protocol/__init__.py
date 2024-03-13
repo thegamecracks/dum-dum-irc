@@ -34,4 +34,6 @@ from .errors import (
 )
 from .highcommand import HighCommand
 from .interfaces import Protocol
+from .message import Message
 from .reader import Reader, bytearray_reader, byte_reader
+from .snowflake import create_snowflake

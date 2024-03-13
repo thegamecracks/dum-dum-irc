@@ -1,6 +1,9 @@
-from typing import TypeAlias
+import bisect
+import collections
+from typing import Sequence, TypeAlias
 
 from .channel import Channel
+from .message import Message
 
 User: TypeAlias = str
 
@@ -8,6 +11,7 @@ User: TypeAlias = str
 class HighCommand:
     def __init__(self) -> None:
         self._channels: dict[str, Channel] = {}
+        self._messages: dict[str, list[Message]] = collections.defaultdict(list)
         self._users: dict[str, User] = {}
 
     @property
@@ -22,6 +26,37 @@ class HighCommand:
 
     def remove_channel(self, name: str) -> Channel | None:
         return self._channels.pop(name, None)
+
+    def get_messages(self, channel_name: str) -> Sequence[Message]:
+        return self._messages[channel_name]
+
+    def add_message(self, message: Message) -> None:
+        messages = self._messages[message.channel_name]
+        bisect.insort(messages, message, key=lambda m: m.id)
+
+    def get_message(self, channel_name: str, id: int) -> Message | None:
+        messages = self._messages[channel_name]
+        if len(messages) < 1:
+            return None
+
+        i = self._index_message(messages, id)
+        message = messages[i]
+        if message.id == id:
+            return message
+
+    def remove_message(self, channel_name: str, id: int) -> Message | None:
+        messages = self._messages[channel_name]
+        if len(messages) < 1:
+            return None
+
+        i = self._index_message(messages, id)
+        message = messages[i]
+        if message.id == id:
+            del messages[i]
+            return message
+
+    def _index_message(self, messages: Sequence[Message], id: int) -> int:
+        return bisect.bisect_left(messages, id, key=lambda m: m.id)
 
     @property
     def users(self) -> tuple[User, ...]:

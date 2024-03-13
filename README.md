@@ -52,7 +52,7 @@ Servers are able to send the following messages:
 
 1. INCOMPATIBLE_VERSION: `0x00 | 1-byte version`
 2. ACKNOWLEDGE_AUTHENTICATION: `0x01 | 0 or 1 success`
-3. SEND_MESSAGE: `0x02 | varchar channel name (32) | varchar nickname (32) | varchar content (1024)`
+3. SEND_MESSAGE: `0x02 | 8-byte snowflake | varchar channel name (32) | varchar nickname (32) | varchar content (1024)`
 4. LIST_CHANNELS: `0x03 | 2-byte length | varchar channel name (32) | ...`
 
 When the client disconnects and reconnects, they MUST re-authenticate with the server.

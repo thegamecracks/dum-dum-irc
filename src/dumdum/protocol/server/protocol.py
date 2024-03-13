@@ -10,6 +10,7 @@ from dumdum.protocol.constants import (
 from dumdum.protocol.enums import ClientMessageType
 from dumdum.protocol.errors import InvalidStateError
 from dumdum.protocol.interfaces import Protocol
+from dumdum.protocol.message import Message
 from dumdum.protocol.reader import Reader, bytearray_reader
 
 from .events import (
@@ -37,7 +38,7 @@ class ServerState(Enum):
 class Server(Protocol):
     """The server for a single client."""
 
-    PROTOCOL_VERSION = 0
+    PROTOCOL_VERSION = 1
 
     def __init__(self) -> None:
         self._buffer = bytearray()
@@ -55,9 +56,9 @@ class Server(Protocol):
 
         return bytes(ServerMessageAcknowledgeAuthentication(success))
 
-    def send_message(self, channel_name: str, nick: str, content: str) -> bytes:
+    def send_message(self, message: Message) -> bytes:
         self._assert_state(ServerState.READY)
-        return bytes(ServerMessagePost(channel_name, nick, content))
+        return bytes(ServerMessagePost(message))
 
     def list_channels(self, channels: Sequence[Channel]) -> bytes:
         return bytes(ServerMessageListChannels(channels))

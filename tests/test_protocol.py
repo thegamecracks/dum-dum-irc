@@ -9,8 +9,8 @@ from dumdum.protocol import (
     ClientEventChannelsListed,
     ClientEventIncompatibleVersion,
     ClientState,
-    HighCommand,
     InvalidStateError,
+    Message,
     Protocol,
     Server,
     ServerEventAuthentication,
@@ -168,16 +168,16 @@ def test_unauthenticated_send_message():
 def test_unauthenticated_server_send_message():
     nick = "thegamecracks"
     content = "Hello world!"
-    channel = Channel("general")
+    message = Message(0, "general", nick, content)
 
     client = Client(nick=nick)
     server = Server()
 
     with pytest.raises(InvalidStateError):
-        server.send_message(channel.name, nick, content)
+        server.send_message(message)
 
     server._state = ServerState.READY
-    data = server.send_message(channel.name, nick, content)
+    data = server.send_message(message)
 
     with pytest.raises(InvalidStateError):
         communicate(server, data, client)

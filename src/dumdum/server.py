@@ -12,11 +12,13 @@ from dumdum.protocol import (
     Channel,
     HighCommand,
     InvalidStateError,
+    Message,
     Server,
     ServerEvent,
     ServerEventAuthentication,
     ServerEventListChannels,
     ServerEventMessageReceived,
+    create_snowflake,
 )
 
 log = logging.getLogger(__name__)
@@ -162,13 +164,17 @@ class Manager:
         if self.hc.get_channel(event.channel_name) is None:
             return
 
+        message = Message(
+            create_snowflake(),
+            event.channel_name,
+            conn.nick,
+            event.content,
+        )
+        self.hc.add_message(message)
+
         for peer in self.connections:
             with contextlib.suppress(InvalidStateError):
-                data = peer.server.send_message(
-                    event.channel_name,
-                    conn.nick,
-                    event.content,
-                )
+                data = peer.server.send_message(message)
                 peer.writer.write(data)
 
     def _list_channels(self, conn: Connection, event: ServerEventListChannels) -> None:

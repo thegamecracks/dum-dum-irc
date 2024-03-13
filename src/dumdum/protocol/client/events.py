@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Sequence
 
 from dumdum.protocol.channel import Channel
+from dumdum.protocol.message import Message
 
 
 @dataclass
@@ -28,9 +29,7 @@ class ClientEventAuthentication(ClientEvent):
 class ClientEventMessageReceived(ClientEvent):
     """The server broadcasted a message to the client."""
 
-    channel_name: str
-    nick: str
-    content: str
+    message: Message
 
 
 @dataclass
