@@ -18,11 +18,13 @@ from .events import (
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
     ServerEventListChannels,
+    ServerEventListMessages,
     ServerEventMessageReceived,
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
     ServerMessageListChannels,
+    ServerMessageListMessages,
     ServerMessagePost,
     ServerMessageSendIncompatibleVersion,
 )
@@ -63,6 +65,9 @@ class Server(Protocol):
     def list_channels(self, channels: Sequence[Channel]) -> bytes:
         return bytes(ServerMessageListChannels(channels))
 
+    def list_messages(self, messages: Sequence[Message]) -> bytes:
+        return bytes(ServerMessageListMessages(messages))
+
     def _assert_state(self, *states: ServerState) -> None:
         if self._state not in states:
             raise InvalidStateError(self._state, states)
@@ -92,6 +97,8 @@ class Server(Protocol):
             return self._send_message(reader)
         elif t == ClientMessageType.LIST_CHANNELS:
             return self._list_channels(reader)
+        elif t == ClientMessageType.LIST_MESSAGES:
+            return self._list_messages(reader)
 
         raise RuntimeError(f"No handler for {t}")
 
@@ -121,4 +128,12 @@ class Server(Protocol):
     def _list_channels(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.READY)
         event = ServerEventListChannels()
+        return [event], b""
+
+    def _list_messages(self, reader: Reader) -> ParsedData:
+        self._assert_state(ServerState.READY)
+        channel_name = reader.read_varchar(max_length=MAX_CHANNEL_NAME_LENGTH)
+        before = reader.read_bigint() or None
+        after = reader.read_bigint() or None
+        event = ServerEventListMessages(channel_name, before, after)
         return [event], b""

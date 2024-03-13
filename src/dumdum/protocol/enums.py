@@ -5,6 +5,7 @@ class ClientMessageType(Enum):
     AUTHENTICATE = 0
     SEND_MESSAGE = 1
     LIST_CHANNELS = 2
+    LIST_MESSAGES = 3
 
 
 class ServerMessageType(Enum):
@@ -12,3 +13,4 @@ class ServerMessageType(Enum):
     ACKNOWLEDGE_AUTHENTICATION = 1
     SEND_MESSAGE = 2
     LIST_CHANNELS = 3
+    LIST_MESSAGES = 4

@@ -44,6 +44,7 @@ Clients are able to send the following messages:
 1. AUTHENTICATE: `0x00 | 1-byte version | varchar nickname (32)`
 2. SEND_MESSAGE: `0x01 | varchar channel name (32) | varchar content (1024)`
 3. LIST_CHANNELS: `0x02`
+4. LIST_MESSAGES: `0x03 | 8-byte before snowflake or 0 | 8-byte after snowflake or 0`
 
 Clients must send an AUTHENTICATE command before they can begin chat
 communications.
@@ -54,6 +55,7 @@ Servers are able to send the following messages:
 2. ACKNOWLEDGE_AUTHENTICATION: `0x01 | 0 or 1 success`
 3. SEND_MESSAGE: `0x02 | 8-byte snowflake | varchar channel name (32) | varchar nickname (32) | varchar content (1024)`
 4. LIST_CHANNELS: `0x03 | 2-byte length | varchar channel name (32) | ...`
+5. LIST_MESSAGES: `0x04 | 3-byte length | same fields after SEND_MESSAGE | ...`
 
 When the client disconnects and reconnects, they MUST re-authenticate with the server.
 

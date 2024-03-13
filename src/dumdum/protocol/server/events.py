@@ -31,3 +31,12 @@ class ServerEventMessageReceived(ServerEvent):
 @dataclass
 class ServerEventListChannels(ServerEvent):
     """The client requested a list of channels."""
+
+
+@dataclass
+class ServerEventListMessages(ServerEvent):
+    """The client requested a list of messages."""
+
+    channel_name: str
+    before: int | None
+    after: int | None

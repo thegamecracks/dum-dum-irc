@@ -37,3 +37,10 @@ class ClientEventChannelsListed(ClientEvent):
     """The server responded to our request for a channel list."""
 
     channels: Sequence[Channel]
+
+
+@dataclass
+class ClientEventMessagesListed(ClientEvent):
+    """The server responded to our request for a message list."""
+
+    messages: Sequence[Message]

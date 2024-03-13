@@ -43,3 +43,22 @@ class ClientMessagePost:
 class ClientMessageListChannels:
     def __bytes__(self) -> bytes:
         return bytes([ClientMessageType.LIST_CHANNELS.value])
+
+
+@dataclass
+class ClientMessageListMessages:
+    channel_name: str
+    before: int | None
+    after: int | None
+
+    def __bytes__(self) -> bytes:
+        before = self.before or 0
+        after = self.after or 0
+        return bytes(
+            [
+                ClientMessageType.LIST_MESSAGES.value,
+                *varchar.dumps(self.channel_name, max_length=MAX_CHANNEL_NAME_LENGTH),
+                *before.to_bytes(8, byteorder="big"),
+                *after.to_bytes(8, byteorder="big"),
+            ]
+        )

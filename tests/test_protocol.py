@@ -8,6 +8,7 @@ from dumdum.protocol import (
     ClientEventAuthentication,
     ClientEventChannelsListed,
     ClientEventIncompatibleVersion,
+    ClientEventMessagesListed,
     ClientState,
     InvalidStateError,
     Message,
@@ -16,6 +17,7 @@ from dumdum.protocol import (
     ServerEventAuthentication,
     ServerEventIncompatibleVersion,
     ServerEventListChannels,
+    ServerEventListMessages,
     ServerEventMessageReceived,
     ServerState,
 )
@@ -181,3 +183,27 @@ def test_unauthenticated_server_send_message():
 
     with pytest.raises(InvalidStateError):
         communicate(server, data, client)
+
+
+def test_list_messages():
+    nick = "thegamecracks"
+    channel = Channel("general")
+
+    client = Client(nick=nick)
+    server = Server()
+
+    communicate(client, client.authenticate(), server)
+    communicate(server, server.acknowledge_authentication(success=True), client)
+
+    before = 1
+    after = 2
+    data = client.list_messages(channel.name, before=before, after=after)
+    client_events, server_events = communicate(client, data, server)
+    assert client_events == []
+    assert server_events == [ServerEventListMessages(channel.name, before, after)]
+
+    messages = [Message(i, channel.name, nick, "Hello world!") for i in range(100)]
+    data = server.list_messages(messages)
+    server_events, client_events = communicate(server, data, client)
+    assert server_events == []
+    assert client_events == [ClientEventMessagesListed(messages)]

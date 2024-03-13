@@ -1,7 +1,10 @@
 from enum import Enum
 
 from dumdum.protocol.channel import Channel
-from dumdum.protocol.constants import MAX_LIST_CHANNEL_LENGTH_BYTES
+from dumdum.protocol.constants import (
+    MAX_LIST_CHANNEL_LENGTH_BYTES,
+    MAX_LIST_MESSAGE_LENGTH_BYTES,
+)
 from dumdum.protocol.enums import ServerMessageType
 from dumdum.protocol.errors import InvalidStateError
 from dumdum.protocol.interfaces import Protocol
@@ -14,10 +17,12 @@ from .events import (
     ClientEventChannelsListed,
     ClientEventIncompatibleVersion,
     ClientEventMessageReceived,
+    ClientEventMessagesListed,
 )
 from .messages import (
     ClientMessageAuthenticate,
     ClientMessageListChannels,
+    ClientMessageListMessages,
     ClientMessagePost,
 )
 
@@ -61,6 +66,22 @@ class Client(Protocol):
         self._assert_state(ClientState.READY)
         return bytes(ClientMessageListChannels())
 
+    def list_messages(
+        self,
+        channel_name: str,
+        *,
+        before: int | None = None,
+        after: int | None = None,
+    ) -> bytes:
+        self._assert_state(ClientState.READY)
+
+        if before is not None and before < 1:
+            raise ValueError(f"before must be 1 or greater, not {before}")
+        if after is not None and after < 1:
+            raise ValueError(f"after must be 1 or greater, not {after}")
+
+        return bytes(ClientMessageListMessages(channel_name, before, after))
+
     def _assert_state(self, *states: ClientState) -> None:
         if self._state not in states:
             raise InvalidStateError(self._state, states)
@@ -92,6 +113,8 @@ class Client(Protocol):
             return self._parse_message(reader)
         elif t == ServerMessageType.LIST_CHANNELS:
             return self._parse_channel_list(reader)
+        elif t == ServerMessageType.LIST_MESSAGES:
+            return self._parse_message_list(reader)
 
         raise RuntimeError(f"No handler for {t}")
 
@@ -134,4 +157,23 @@ class Client(Protocol):
                 pass
 
         event = ClientEventChannelsListed(channels)
+        return [event], b""
+
+    def _parse_message_list(self, reader: Reader) -> ParsedData:
+        self._assert_state(ClientState.READY)
+        length = int.from_bytes(
+            reader.readexactly(MAX_LIST_MESSAGE_LENGTH_BYTES),
+            byteorder="big",
+        )
+        message_bytes = reader.readexactly(length)
+
+        messages: list[Message] = []
+        with byte_reader(message_bytes) as message_reader:
+            try:
+                while True:
+                    messages.append(Message.from_reader(message_reader))
+            except IndexError:
+                pass
+
+        event = ClientEventMessagesListed(messages)
         return [event], b""
