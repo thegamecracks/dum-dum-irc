@@ -9,7 +9,7 @@ the relevant changes.
 
 # Python Style Guide
 
-- Code should follow [PEP 8] where possible unless excempted by this guide
+- Code should follow [PEP 8] where possible, unless exempted by this guide
   - When unsure, run [Black] to format your code
   - Use `# fmt: off` and `# fmt: on` comments to override the formatter when necessary
 
