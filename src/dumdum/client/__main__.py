@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import platform
 from typing import Iterator
 
 from dumdum.logging import configure_logging
@@ -41,6 +42,7 @@ def main():
     mode: str = args.mode
 
     configure_logging(verbose)
+    enable_windows_dpi_awareness()
 
     if mode == "gui":
         run_gui()
@@ -58,6 +60,13 @@ def run_gui() -> None:
         )
         app.switch_frame(ConnectFrame(app))
         app.mainloop()
+
+
+def enable_windows_dpi_awareness():
+    if platform.system() == "Windows":
+        from ctypes import windll
+
+        windll.shcore.SetProcessDpiAwareness(2)
 
 
 def show_appdirs() -> None:
