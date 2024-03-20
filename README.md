@@ -13,7 +13,7 @@ any conventions or RFC standards.
 With Python 3.11+ and Git installed, you can run the following:
 
 ```sh
-pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.1.3
+pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.2.0
 ```
 
 Once installed, the `dumdum` and `dumdum-server` entry points should be
