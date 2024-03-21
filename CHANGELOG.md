@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2024-03-21
+
 ### Changed
 
 - Various visual tweaks to the Dumdum client
@@ -111,7 +113,8 @@ usually after receiving `ServerEventListMessages`.
 - `dumdum.client` asyncio tkinter GUI client
 - GitHub workflows for pyright and pytest
 
-[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.0...main
+[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.1...main
+[0.2.1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.1.1...v0.1.2
