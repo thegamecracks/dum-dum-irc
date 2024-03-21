@@ -16,19 +16,19 @@ class ConnectFrame(Frame):
         self.grid_columnconfigure(1, weight=1)
 
         self.host_label = Label(self, text="Host:")
-        self.host_label.grid(row=0, column=0)
+        self.host_label.grid(row=0, column=0, sticky="w")
         self.host_entry_var = StringVar(self)
         self.host_entry = Entry(self, textvariable=self.host_entry_var)
         self.host_entry.grid(row=0, column=1, sticky="ew")
 
         self.port_label = Label(self, text="Port:")
-        self.port_label.grid(row=1, column=0)
+        self.port_label.grid(row=1, column=0, sticky="w")
         self.port_entry_var = StringVar(self)
         self.port_entry = Entry(self, textvariable=self.port_entry_var)
         self.port_entry.grid(row=1, column=1, sticky="ew")
 
         self.nick_label = Label(self, text="Nickname:")
-        self.nick_label.grid(row=2, column=0)
+        self.nick_label.grid(row=2, column=0, sticky="w")
         self.nick_entry_var = StringVar(self)
         self.nick_entry = Entry(self, textvariable=self.nick_entry_var)
         self.nick_entry.grid(row=2, column=1, sticky="ew")
