@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import platform
+import sys
 from typing import Iterator
 
 from dumdum.logging import configure_logging
@@ -63,7 +63,7 @@ def run_gui() -> None:
 
 
 def enable_windows_dpi_awareness():
-    if platform.system() == "Windows":
+    if sys.platform == "win32":
         from ctypes import windll
 
         windll.shcore.SetProcessDpiAwareness(2)
