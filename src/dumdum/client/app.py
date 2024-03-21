@@ -45,7 +45,7 @@ class TkApp(Tk):
         self._last_connection_exc = None
 
         self.title("Dumdum Client")
-        self.geometry("640x480")
+        self.geometry("900x600")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
