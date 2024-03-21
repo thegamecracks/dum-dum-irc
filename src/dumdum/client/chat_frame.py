@@ -171,7 +171,7 @@ class MessageView(Frame):
         self.message = message
 
         self.nick = Label(self, text=f"{message.nick}:", font="bold 10")
-        self.nick.grid(row=0, column=0, sticky="w")
+        self.nick.grid(row=0, column=0, sticky="nw")
         self.content = Label(self, text=message.content, wraplength=1000)
         self.content.grid(row=0, column=1, sticky="ew")
 
