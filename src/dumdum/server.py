@@ -114,6 +114,9 @@ class Manager:
         self.connections.append(connection)
         try:
             await connection.communicate()
+        except asyncio.CancelledError:
+            # Don't need to log this exception
+            asyncio.current_task().uncancel()  # type: ignore
         except BaseException:
             log.exception("Error occurred while handling %s", addr)
         finally:
