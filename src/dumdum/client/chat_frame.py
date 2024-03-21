@@ -36,7 +36,7 @@ class ChatFrame(Frame):
         self.message_cache = MessageCache()
 
         self.channel_list = ChannelList(self)
-        self.channel_list.grid(row=0, column=0, rowspan=2, sticky="nesw")
+        self.channel_list.grid(row=0, column=0, rowspan=2, padx=(0, 10), sticky="nesw")
         self.messages = MessageList(self)
         self.messages.grid(row=0, column=1, sticky="nesw")
         self.send_box = SendBox(self)
