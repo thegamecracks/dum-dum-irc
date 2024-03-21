@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Various visual tweaks to the Dumdum client
+  - Enable DPI awareness on Windows
+  - Show nicknames beside message content in a larger font
+
+### Fixed
+
+- Non-fatal `asyncio.CancelledError` when closing a server with connected clients
+
 ## [0.2.0] - 2024-03-20
 
 Several breaking changes were made to the protocol and the Sans I/O protocol
