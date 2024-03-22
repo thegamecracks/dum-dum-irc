@@ -144,7 +144,7 @@ class MessageList(Frame):
 
         self.messages: list[MessageView] = []
 
-        self._scroll_frame = ScrollableFrame(self)
+        self._scroll_frame = ScrollableFrame(self, autoscroll=True)
         self._scroll_frame.grid(row=0, column=0, sticky="nesw")
 
         self._last_configured = None

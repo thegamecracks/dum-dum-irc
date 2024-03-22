@@ -4,8 +4,12 @@ from weakref import WeakSet
 
 
 class ScrollableFrame(Frame):
-    def __init__(self, *args, **kwargs):
+    _last_scrollregion: tuple[int, int, int, int] | None
+
+    def __init__(self, *args, autoscroll: bool = False, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.autoscroll = autoscroll
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -34,6 +38,7 @@ class ScrollableFrame(Frame):
         self._canvas.bind("<Configure>", lambda event: self._update())
         self.inner.bind("<Configure>", self._on_inner_configure)
 
+        self._last_scrollregion = None
         self._scrolled_widgets = WeakSet()
         self._style = Style(self)
         self._update_rate = 125
@@ -51,6 +56,8 @@ class ScrollableFrame(Frame):
         self.after(self._update_rate, self._update_loop)
 
     def _update(self):
+        scroll_edges = self._get_scroll_edges()
+
         # self._canvas.bbox("all") doesn't update until window resize
         # so we're relying on the inner frame's requested height instead.
         new_width = max(self._canvas.winfo_width(), self.inner.winfo_reqwidth())
@@ -62,6 +69,14 @@ class ScrollableFrame(Frame):
         self._update_scrollbar_visibility(self._xscrollbar)
         self._update_scrollbar_visibility(self._yscrollbar)
         self._propagate_scroll_binds(self.inner)
+        self._update_scroll_edges(bbox, *scroll_edges)
+
+    def _get_scroll_edges(self) -> tuple[bool, bool]:
+        xview = self._canvas.xview()
+        yview = self._canvas.yview()
+        scrolled_to_right = xview[1] == 1 and xview[0] != 0
+        scrolled_to_bottom = yview[1] == 1 and yview[0] != 0
+        return scrolled_to_right, scrolled_to_bottom
 
     def _propagate_scroll_binds(self, parent: Widget):
         if parent not in self._scrolled_widgets:
@@ -71,6 +86,23 @@ class ScrollableFrame(Frame):
 
         for child in parent.winfo_children():
             self._propagate_scroll_binds(child)
+
+    def _update_scroll_edges(
+        self,
+        bbox: tuple[int, int, int, int],
+        scrolled_to_right: bool,
+        scrolled_to_bottom: bool,
+    ) -> None:
+        self._last_scrollregion, last_bbox = bbox, self._last_scrollregion
+        if not self.autoscroll:
+            return
+        elif bbox == last_bbox:
+            return
+
+        if scrolled_to_right:
+            self._canvas.xview_moveto(1)
+        if scrolled_to_bottom:
+            self._canvas.yview_moveto(1)
 
     def _on_mouse_xscroll(self, event: Event):
         delta = int(-event.delta / 100)
