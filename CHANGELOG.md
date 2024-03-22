@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- Dumdum client improvements:
+  - Dynamically wrap message content for larger window sizes
+
 ## [0.2.1] - 2024-03-21
 
 ### Changed

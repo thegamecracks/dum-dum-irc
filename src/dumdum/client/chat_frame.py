@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import collections
 import concurrent.futures
+import time
 from tkinter import Event, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Treeview
 from typing import ContextManager
@@ -128,6 +129,11 @@ class ChannelList(Frame):
 
 
 class MessageList(Frame):
+    UPDATE_RATE = 250
+    UPDATE_IDLE_PERIOD = 0.75
+
+    _last_configured: float | None
+
     def __init__(self, parent: ChatFrame):
         super().__init__(parent)
 
@@ -140,6 +146,11 @@ class MessageList(Frame):
 
         self._scroll_frame = ScrollableFrame(self)
         self._scroll_frame.grid(row=0, column=0, sticky="nesw")
+
+        self._last_configured = None
+        self.after(self.UPDATE_RATE, self._update_loop)
+
+        self.bind("<Configure>", self._on_configure)
 
     def add_message(self, message: Message) -> None:
         widget = MessageView(self._scroll_frame.inner, self, message)
@@ -162,6 +173,21 @@ class MessageList(Frame):
             for message in self.parent.message_cache.get_messages(channel):
                 self.add_message(message)
 
+    def _on_configure(self, event: Event) -> None:
+        self._last_configured = time.perf_counter()
+
+    def _update_loop(self) -> None:
+        self.after(self.UPDATE_RATE, self._update_loop)
+
+        if self._last_configured is None:
+            return
+        elif time.perf_counter() < self._last_configured + self.UPDATE_IDLE_PERIOD:
+            return
+
+        self._last_configured = None
+        for message in self.messages:
+            message.wrap_to_width(self.winfo_width())
+
 
 class MessageView(Frame):
     def __init__(self, frame: Frame, parent: MessageList, message: Message) -> None:
@@ -174,6 +200,11 @@ class MessageView(Frame):
         self.nick.grid(row=0, column=0, sticky="nw")
         self.content = Label(self, text=message.content, wraplength=1000)
         self.content.grid(row=0, column=1, sticky="ew")
+
+    def wrap_to_width(self, width: int) -> None:
+        minimum = 800
+        maximum = width - self.nick.winfo_reqwidth() - 20
+        self.content.configure(wraplength=max(minimum, maximum))
 
 
 class MessageCache:
