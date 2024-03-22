@@ -1,6 +1,6 @@
 from __future__ import annotations
-import collections
 
+import collections
 import concurrent.futures
 from tkinter import Event, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Treeview
