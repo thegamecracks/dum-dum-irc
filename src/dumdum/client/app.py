@@ -67,18 +67,13 @@ class TkApp(Tk):
         fut.add_done_callback(log_fut_exception)
         return fut
 
-    async def attempt_connection(self, host: str, port: int, nick: str) -> bool:
+    async def attempt_connection(self, host: str, port: int, nick: str) -> None:
         self.client = AsyncClient(nick, event_callback=self._handle_event_threadsafe)
 
         coro = self._run_connection(host, port)
         self._connection_task = asyncio.create_task(coro)
 
-        async with asyncio.TaskGroup() as tg:
-            auth_task = tg.create_task(self.client._wait_for_authentication())
-            tasks = [self._connection_task, auth_task]
-            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-
-        return await auth_task
+        await self.client._wait_for_authentication()
 
     def _connect_lifetime_with_event_thread(self, event_thread: EventThread) -> None:
         # In our application we'll be running an asyncio event loop in
