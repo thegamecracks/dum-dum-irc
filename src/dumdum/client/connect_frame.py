@@ -1,4 +1,5 @@
 import concurrent.futures
+import ssl
 from tkinter import StringVar
 from tkinter.ttk import Button, Entry, Frame, Label
 
@@ -61,10 +62,11 @@ class ConnectFrame(Frame):
         host = self.host_entry_var.get()
         port = int(self.port_entry_var.get())
         nick = self.nick_entry_var.get()
+        ssl = self._create_ssl_context()
 
         self.set_last_connect_entries(host, port, nick)
 
-        coro = self.app.attempt_connection(host, port, nick)
+        coro = self.app.attempt_connection(host, port, nick, ssl=ssl)
         self._connection_attempt = self.app.submit(coro)
 
         self.connect.state(["disabled"])
@@ -80,6 +82,12 @@ class ConnectFrame(Frame):
         self._destroying = True
         self.app.unbind("<Return>", self._connect_bind)
         super().destroy()
+
+    def _create_ssl_context(self) -> ssl.SSLContext:
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        return context
 
     def _on_connection_attempt(self, fut: concurrent.futures.Future) -> None:
         if self._destroying:

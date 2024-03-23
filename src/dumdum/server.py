@@ -6,6 +6,7 @@ import argparse
 import asyncio
 import contextlib
 import logging
+import ssl
 
 from dumdum.logging import configure_logging
 from dumdum.protocol import (
@@ -55,12 +56,19 @@ def main():
         default=6667,
         help="The port number to host on",
     )
+    parser.add_argument(
+        "--cert",
+        help="The SSL certificate to use (.pem)",
+        required=True,
+        type=parse_cert,
+    )
 
     args = parser.parse_args()
     verbose: int = args.verbose
     channels: list[Channel] = args.channels or get_default_channels()
     host: str | None = args.host
     port: int = args.port
+    ssl: ssl.SSLContext | None = args.cert
 
     configure_logging(verbose)
 
@@ -69,7 +77,7 @@ def main():
         hc.add_channel(channel)
 
     try:
-        asyncio.run(host_server(hc, host, port))
+        asyncio.run(host_server(hc, host, port, ssl=ssl))
     except KeyboardInterrupt:
         pass
 
@@ -82,16 +90,26 @@ def get_default_channels() -> list[Channel]:
     return [Channel("general")]
 
 
+def parse_cert(s: str) -> ssl.SSLContext:
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    if s != "":
+        context.load_cert_chain(s)
+    return context
+
+
 async def host_server(
     hc: HighCommand,
     host: str | None,
     port: int,
+    *,
+    ssl: ssl.SSLContext | None,
 ) -> None:
     manager = Manager(hc)
     server = await asyncio.start_server(
         manager.accept_connection,
         host=host,
         port=port,
+        ssl=ssl,
     )
     async with server:
         await server.serve_forever()

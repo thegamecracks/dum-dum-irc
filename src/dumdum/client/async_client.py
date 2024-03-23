@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import ssl
 from typing import Any, AsyncIterator, Callable, Self
 
 from dumdum.protocol import (
@@ -49,11 +50,17 @@ class AsyncClient:
         return self._addr
 
     @contextlib.asynccontextmanager
-    async def connect(self, host: str, port: int) -> AsyncIterator[Self]:
+    async def connect(
+        self,
+        host: str,
+        port: int,
+        *,
+        ssl: ssl.SSLContext | None,
+    ) -> AsyncIterator[Self]:
         self._addr = f"{host}:{port}"  # FIXME: must be canonicalized
         self._auth_fut = maybe_create_fut(self._auth_fut)
         try:
-            connector = asyncio.open_connection(host, port)
+            connector = asyncio.open_connection(host, port, ssl=ssl)
             self._reader, self._writer = await connector
         except BaseException:
             self._set_authentication(None)

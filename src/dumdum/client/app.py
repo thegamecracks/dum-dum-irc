@@ -2,6 +2,7 @@ import asyncio
 import concurrent.futures
 import logging
 import queue
+import ssl
 from tkinter import Event, Tk, messagebox
 from tkinter.ttk import Frame
 from typing import Any, Awaitable, ContextManager, Protocol, runtime_checkable
@@ -67,10 +68,17 @@ class TkApp(Tk):
         fut.add_done_callback(log_fut_exception)
         return fut
 
-    async def attempt_connection(self, host: str, port: int, nick: str) -> None:
+    async def attempt_connection(
+        self,
+        host: str,
+        port: int,
+        nick: str,
+        *,
+        ssl: ssl.SSLContext | None,
+    ) -> None:
         self.client = AsyncClient(nick, event_callback=self._handle_event_threadsafe)
 
-        coro = self._run_connection(host, port)
+        coro = self._run_connection(host, port, ssl=ssl)
         self._connection_task = asyncio.create_task(coro)
 
         await self.client._wait_for_authentication()
@@ -92,9 +100,15 @@ class TkApp(Tk):
     def _on_destroy(self, event: Event) -> None:
         super().destroy()
 
-    async def _run_connection(self, host: str, port: int) -> None:
+    async def _run_connection(
+        self,
+        host: str,
+        port: int,
+        *,
+        ssl: ssl.SSLContext | None,
+    ) -> None:
         try:
-            async with self.client.connect(host, port):
+            async with self.client.connect(host, port, ssl=ssl):
                 await self.client.run_forever()
         except BaseException as e:
             self._last_connection_exc = e

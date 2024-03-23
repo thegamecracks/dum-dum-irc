@@ -62,3 +62,24 @@ When the client disconnects and reconnects, they MUST re-authenticate with the s
 As this protocol has been intentionally designed to be simple (no timeouts
 or keep alives), I/O wrappers do not need a significant amount of work to
 implement it.
+
+## TLS Encryption
+
+Currently, servers are required to provide an X.509 certificate and private key
+in order to encrypt their connections. Assuming you have OpenSSL installed,
+you can do the following to generate a private key and self-signed certificate
+in one file:
+
+```sh
+openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.pem
+```
+
+After filling out (or skipping) the certificate signing request prompts,
+you can then run the server with the resulting `cert.pem` file:
+
+```sh
+dumdum-server --cert cert.pem
+```
+
+As for the `dumdum` client, it can no longer connect to servers that
+do not use TLS.
