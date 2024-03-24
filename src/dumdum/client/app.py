@@ -3,6 +3,7 @@ import concurrent.futures
 import logging
 import queue
 import ssl
+import traceback
 from tkinter import Event, Tk, messagebox
 from tkinter.ttk import Frame
 from typing import Any, Awaitable, ContextManager, Protocol, runtime_checkable
@@ -19,6 +20,15 @@ from .event_thread import EventThread
 from .store import ClientStore
 
 log = logging.getLogger(__name__)
+
+
+def reset_during_ssl_handshake(exc: ConnectionResetError) -> bool:
+    for stack in traceback.extract_tb(exc.__traceback__):
+        if "handshake" in stack.name:
+            return True
+        if stack.line is not None and "handshake" in stack.line:
+            return True
+    return False
 
 
 class ClientStoreFactory(Protocol):
@@ -166,6 +176,13 @@ class TkApp(Tk):
         ):
             # Handled via ClientEventAuthentication
             return
+        elif isinstance(exc, ConnectionResetError) and reset_during_ssl_handshake(exc):
+            log.error("Lost connection during SSL handshake", exc_info=exc)
+            messagebox.showerror(
+                "Connection Lost",
+                "The server closed our connection during the SSL handshake. "
+                "Maybe the server does not use SSL?",
+            )
         else:
             log.error("Lost connection with server", exc_info=exc)
             messagebox.showerror("Connection Lost", str(exc))
