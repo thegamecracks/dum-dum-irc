@@ -10,10 +10,16 @@ any conventions or RFC standards.
 
 ## Usage
 
-With Python 3.11+ and Git installed, you can run the following:
+With Python 3.11+ and Git installed, you can install the newest pinned version:
 
 ```sh
 pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.2.1
+```
+
+Or alternatively you can install the latest development version:
+
+```sh
+pip install git+https://github.com/thegamecracks/dum-dum-irc
 ```
 
 Once installed, the `dumdum` and `dumdum-server` entry points should be
