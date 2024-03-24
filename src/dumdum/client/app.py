@@ -207,6 +207,17 @@ class TkApp(Tk):
                 "The server closed our connection during the SSL handshake. "
                 "Maybe the server does not use SSL?",
             )
+        elif isinstance(exc, BaseExceptionGroup) and len(exc.exceptions) == 1:
+            first_exception = exc.exceptions[0]
+            log.error("Lost connection with server", exc_info=exc)
+            messagebox.showerror("Connection Lost", str(first_exception))
+        elif isinstance(exc, BaseExceptionGroup):
+            log.error("Lost connection with server", exc_info=exc)
+            messagebox.showerror(
+                "Connection Lost",
+                "Multiple errors occurred during the connection. "
+                "See logs for more information.",
+            )
         else:
             log.error("Lost connection with server", exc_info=exc)
             messagebox.showerror("Connection Lost", str(exc))

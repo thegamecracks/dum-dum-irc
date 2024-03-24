@@ -1,7 +1,7 @@
 import asyncio
 import contextlib
 import ssl
-from typing import Any, AsyncIterator, Callable, Self
+from typing import Any, AsyncIterator, Callable, Iterator, Self
 
 from dumdum.protocol import (
     Client,
@@ -65,35 +65,34 @@ class AsyncClient:
         ssl: ssl.SSLContext | None,
     ) -> AsyncIterator[Self]:
         self._addr = f"{host}:{port}"  # FIXME: must be canonicalized
-        self._auth_fut = maybe_create_fut(self._auth_fut)
         self._ssl_context = ssl
-        try:
+
+        with self._prepare_auth_fut():
             self._reader, self._writer = await asyncio.open_connection(host, port)
-        except BaseException:
-            self._set_authentication(None)
-            raise
+            async with asyncio.TaskGroup() as tg:
+                _read_coro = self._read_loop(self._reader, self._writer)
+                self._read_task = tg.create_task(_read_coro)
 
-        async with asyncio.TaskGroup() as tg:
-            _read_coro = self._read_loop(self._reader, self._writer)
-            self._read_task = tg.create_task(_read_coro)
-            self._read_task.add_done_callback(self._on_read_task_done)
+                try:
+                    success = await self._handshake()
+                    if not success:
+                        raise AuthenticationFailedError()
 
-            try:
-                success = await self._handshake()
-                if not success:
-                    raise AuthenticationFailedError()
-
-                yield self
-            finally:
-                await self.close()
+                    yield self
+                finally:
+                    await self.close()
 
     async def run_forever(self) -> None:
         assert self._read_task is not None
         await self._read_task
 
     async def close(self) -> None:
-        if self._writer is not None:
-            self._writer.close()
+        if self._writer is None:
+            return
+
+        # Any exceptions here will be repeated in _read_loop()
+        self._writer.close()
+        with contextlib.suppress(Exception):
             await self._writer.wait_closed()
 
     async def send_message(self, channel_name: str, content: str) -> None:
@@ -114,6 +113,14 @@ class AsyncClient:
         data = self._protocol.list_messages(channel_name, before=before, after=after)
         await self._send_and_drain(data)
 
+    @contextlib.contextmanager
+    def _prepare_auth_fut(self) -> Iterator[None]:
+        self._auth_fut = maybe_create_fut(self._auth_fut)
+        try:
+            yield
+        finally:
+            self._set_authentication(None)
+
     async def _read_loop(
         self,
         reader: asyncio.StreamReader,
@@ -128,9 +135,6 @@ class AsyncClient:
             writer.write(outgoing)
             await self._handle_events(events)
             await writer.drain()  # exert backpressure
-
-    def _on_read_task_done(self, task: asyncio.Task) -> None:
-        self._set_authentication(None)
 
     async def _handshake(self) -> bool | None:
         assert self._writer is not None
