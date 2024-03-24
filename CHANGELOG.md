@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Graphical improvements to the Dumdum client:
+  - Immediately wrap messages when switching between channels
+
 ## [0.3.0] - 2024-03-24
 
 Breaking changes were made to the protocol. Connections can now negotiate

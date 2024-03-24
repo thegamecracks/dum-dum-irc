@@ -154,6 +154,7 @@ class MessageList(Frame):
 
     def add_message(self, message: Message) -> None:
         widget = MessageView(self._scroll_frame.inner, self, message)
+        widget.wrap_to_width(self.winfo_width())
         widget.grid(row=len(self.messages), column=0, sticky="ew")
         self.messages.append(widget)
 
