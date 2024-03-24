@@ -1,3 +1,10 @@
+# SSL Certificates
+*.pem
+*.crt
+*.ca-bundle
+*.cer
+*.key
+
 # IDEs
 .idea/
 .vscode/
