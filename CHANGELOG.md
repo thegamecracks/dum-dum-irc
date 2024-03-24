@@ -6,11 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+Breaking changes were made to the protocol. Connections can now negotiate
+TLS encryption before proceeding with authentication via a new HELLO message type.
+
+### Added
+
+- New event/message types:
+  - `ClientEventHello`
+  - `ClientMessageHello`
+  - `ServerEventHello`
+  - `ServerMessageHello`
+- New `dumdum-server --cert <CERT | CERT:KEY>` argument
+- New client GUI configuration options:
+  - `Use SSL`
+  - `Certificate (Optional)`
+
 ### Changed
 
+- Bump protocol version from `1` to `2`
+- Re-enumerate `ClientMessageType` values:
+  - `HELLO = 0`
+  - `AUTHENTICATE = 2`
+  - `SEND_MESSAGE = 3`
+  - `LIST_CHANNELS = 4`
+  - `LIST_MESSAGES = 5`
+- Re-enumerate `ServerMessageType` values:
+  - `HELLO = 0`
+  - `INCOMPATIBLE_VERSION = 1`
+  - `AUTHENTICATE = 2`
+  - `SEND_MESSAGE = 3`
+  - `LIST_CHANNELS = 4`
+  - `LIST_MESSAGES = 5`
 - Dumdum client improvements:
   - Dynamically wrap message content for larger window sizes
   - Automatically scroll message feed
+
+### Fixed
+
+- Resolve potential deadlock in client GUI when connection terminates
+  before authentication is completed
 
 ## [0.2.1] - 2024-03-21
 
