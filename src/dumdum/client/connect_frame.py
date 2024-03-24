@@ -1,11 +1,14 @@
 import concurrent.futures
+import logging
 import ssl
 from pathlib import Path
-from tkinter import BooleanVar, StringVar
+from tkinter import BooleanVar, StringVar, messagebox
 from tkinter.ttk import Button, Checkbutton, Entry, Frame, Label
 
 from .app import TkApp
 from .file_entry import SSL_CERTIFICATE_FILETYPES, FileEntry
+
+log = logging.getLogger(__name__)
 
 
 class ConnectFrame(Frame):
@@ -91,13 +94,30 @@ class ConnectFrame(Frame):
         ssl_cert = self.ssl_cert.get()
 
         if ssl_enabled:
-            ssl = self._create_ssl_context(self.ssl_cert.get_path())
+            path = self.ssl_cert.get_path()
+            if path is not None and not path.is_file():
+                messagebox.showerror(
+                    "Certificate Not Found",
+                    "The SSL certificate path does not exist.",
+                )
+                return
+
+            try:
+                ssl_context = self._create_ssl_context(path)
+            except ssl.SSLError as e:
+                log.error("Could not create SSL context", exc_info=e)
+                messagebox.showerror(
+                    "Invalid Certificate",
+                    "The SSL certificate could not be loaded.",
+                )
+                return
+
         else:
-            ssl = None
+            ssl_context = None
 
         self.set_last_connect_entries(host, port, nick, ssl_enabled, ssl_cert)
 
-        coro = self.app.attempt_connection(host, port, nick, ssl=ssl)
+        coro = self.app.attempt_connection(host, port, nick, ssl=ssl_context)
         self._connection_attempt = self.app.submit(coro)
 
         self.connect.state(["disabled"])
