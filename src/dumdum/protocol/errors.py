@@ -30,7 +30,8 @@ class InvalidStateError(ProtocolError):
 
     def __init__(self, current_state: Enum, expected_states: tuple[Enum, ...]) -> None:
         super().__init__(
-            "Client state must be {}, but is currently {}".format(
+            "{} must be {}, but is currently {}".format(
+                type(current_state).__name__,
                 " or ".join(s.name for s in expected_states),
                 current_state.name,
             )
