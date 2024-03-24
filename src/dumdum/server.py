@@ -1,4 +1,13 @@
-"""Host a dumdum server."""
+"""Host a dumdum server.
+
+To use TLS encryption, you must provide a certificate and private key.
+This can be specified in one of two ways:
+1. Specify a single file containing the private key and certificate:
+     --cert hello.pem
+2. Specify the certificate and private key in separate files:
+     --cert hello.crt:hello.key
+
+"""
 
 from __future__ import annotations
 
@@ -59,7 +68,7 @@ def main():
     parser.add_argument(
         "--cert",
         default="",
-        help="The SSL certificate to use (.pem)",
+        help="The SSL certificate and private key to use",
         type=parse_cert,
     )
 
@@ -94,8 +103,11 @@ def parse_cert(s: str) -> ssl.SSLContext | None:
     if s == "":
         return
 
+    cafile, _, keyfile = s.partition(":")
+    keyfile = keyfile or None
+
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(s)
+    context.load_cert_chain(cafile, keyfile)
     return context
 
 

@@ -70,18 +70,18 @@ to encrypt connections. For example, if you want to use a self-signed certificat
 and private key, you can install OpenSSL and run the following command:
 
 ```sh
-openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.pem
+openssl req -new -x509 -days 365 -nodes -out dumdum.crt -keyout dumdum.key
 ```
 
 After filling out (or skipping) the certificate signing request prompts,
 you can then run the server with the resulting `cert.pem` file:
 
 ```sh
-dumdum-server --cert cert.pem
+dumdum-server --cert dumdum.crt:dumdum.key
 ```
 
 As for the `dumdum` client, SSL can be enabled by the user before connecting
 to a server, but they must know beforehand if the server is also using SSL,
 otherwise the client may not behave properly.
 If the server uses a self-signed certificate, the user will need to download
-the server's certificate and select it.
+the server's certificate (.crt) and select it.
