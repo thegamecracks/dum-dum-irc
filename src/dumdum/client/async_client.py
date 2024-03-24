@@ -136,7 +136,7 @@ class AsyncClient:
         if isinstance(event, ClientEventIncompatibleVersion):
             assert self._writer is not None
             self._writer.close()
-        if isinstance(event, ClientEventAuthentication):
+        elif isinstance(event, ClientEventAuthentication):
             self._set_authentication(event.success)
         self._dispatch_event(event)
 
