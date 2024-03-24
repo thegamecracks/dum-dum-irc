@@ -41,6 +41,11 @@ TLS encryption before proceeding with authentication via a new HELLO message typ
   - Dynamically wrap message content for larger window sizes
   - Automatically scroll message feed
 
+### Removed
+
+- `ClientMessageAuthenticate.version`
+  - This has been moved to `ClientMessageHello`
+
 ### Fixed
 
 - Resolve potential deadlock in client GUI when connection terminates
