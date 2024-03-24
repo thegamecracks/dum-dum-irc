@@ -83,7 +83,8 @@ openssl req -new -x509 -days 365 -nodes -out dumdum.crt -keyout dumdum.key
 ```
 
 After filling out (or skipping) the certificate signing request prompts,
-you can then run the server with the resulting `cert.pem` file:
+you can then run the server with the resulting `dumdum.crt` and `dumdum.key`
+files:
 
 ```sh
 dumdum-server --cert dumdum.crt:dumdum.key
