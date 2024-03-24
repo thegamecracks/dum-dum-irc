@@ -6,7 +6,7 @@ from tkinter import BooleanVar, StringVar, messagebox
 from tkinter.ttk import Button, Checkbutton, Entry, Frame, Label
 
 from .app import TkApp
-from .file_entry import SSL_CERTIFICATE_FILETYPES, FileEntry
+from .file_entry import ALL_FILETYPE, SSL_CERTIFICATE_FILETYPE, FileEntry
 
 log = logging.getLogger(__name__)
 
@@ -47,7 +47,7 @@ class ConnectFrame(Frame):
             text="Certificate (Optional):",
             browse_kwargs={
                 "title": "Use Certificate File",
-                "filetypes": SSL_CERTIFICATE_FILETYPES,
+                "filetypes": [SSL_CERTIFICATE_FILETYPE, ALL_FILETYPE],
             },
         )
         self.ssl_cert.grid(row=2, column=1, padx=(15, 0), sticky="ew")

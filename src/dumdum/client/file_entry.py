@@ -3,12 +3,11 @@ from tkinter import StringVar, filedialog
 from tkinter.ttk import Button, Entry, Frame, Label
 from typing import Any
 
-SSL_CERTIFICATE_FILETYPES = [
-    (
-        "SSL Certificate",
-        ("*.pem", "*.crt", "*.ca-bundle", "*.cer"),
-    ),
-]
+ALL_FILETYPE = ("All files", ("*",))
+SSL_CERTIFICATE_FILETYPE = (
+    "SSL Certificate",
+    ("*.pem", "*.crt", "*.ca-bundle", "*.cer"),
+)
 
 
 class FileEntry(Frame):
