@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-03-24
+
 Breaking changes were made to the protocol. Connections can now negotiate
 TLS encryption before proceeding with authentication via a new HELLO message type.
 
@@ -158,7 +160,8 @@ usually after receiving `ServerEventListMessages`.
 - `dumdum.client` asyncio tkinter GUI client
 - GitHub workflows for pyright and pytest
 
-[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.1...main
+[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.3.0...main
+[0.3.0]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.1.3...v0.2.0
 [0.1.3]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.1.2...v0.1.3
