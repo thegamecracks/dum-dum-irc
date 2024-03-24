@@ -8,6 +8,11 @@ any conventions or RFC standards.
 
 ![Two client windows side-by-side](/docs/images/demo.png)
 
+### [Changelog] | [Contributing Guide]
+
+[Changelog]: /CHANGELOG.md
+[Contributing Guide]: /CONTRIBUTING.md
+
 ## Usage
 
 With Python 3.11+ and Git installed, you can install the newest pinned version:
