@@ -15,7 +15,11 @@ from dumdum.protocol import (
 )
 
 from .async_client import AsyncClient
-from .errors import AuthenticationFailedError
+from .errors import (
+    AuthenticationFailedError,
+    ClientCannotUpgradeSSLError,
+    ServerCannotUpgradeSSLError,
+)
 from .event_thread import EventThread
 from .store import ClientStore
 
@@ -176,6 +180,26 @@ class TkApp(Tk):
         ):
             # Handled via ClientEventAuthentication
             return
+        elif (
+            isinstance(exc, BaseExceptionGroup)
+            and exc.subgroup(ClientCannotUpgradeSSLError) is not None
+        ):
+            log.info("Cannot connect to server, enabling SSL is required")
+            messagebox.showerror(
+                "Cannot Upgrade SSL",
+                "The server requires SSL encryption. You must turn on SSL, "
+                "which may require a self-signed certificate from them.",
+            )
+        elif (
+            isinstance(exc, BaseExceptionGroup)
+            and exc.subgroup(ServerCannotUpgradeSSLError) is not None
+        ):
+            log.info("Cannot connect to server, disabling SSL is required")
+            messagebox.showerror(
+                "Cannot Upgrade SSL",
+                "The server is unable to use SSL encryption. If you still want to "
+                "connect using an insecure connection, you must turn off SSL.",
+            )
         elif isinstance(exc, ConnectionResetError) and reset_during_ssl_handshake(exc):
             log.error("Lost connection during SSL handshake", exc_info=exc)
             messagebox.showerror(

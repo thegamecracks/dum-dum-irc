@@ -7,10 +7,15 @@ from dumdum.protocol import (
     Client,
     ClientEvent,
     ClientEventAuthentication,
+    ClientEventHello,
     ClientEventIncompatibleVersion,
 )
 
-from .errors import AuthenticationFailedError
+from .errors import (
+    AuthenticationFailedError,
+    ClientCannotUpgradeSSLError,
+    ServerCannotUpgradeSSLError,
+)
 
 
 def maybe_create_fut(last: asyncio.Future | None) -> asyncio.Future:
@@ -25,6 +30,7 @@ class AsyncClient:
     _read_task: asyncio.Task | None
     _addr: str | None
     _auth_fut: asyncio.Future[bool | None] | None
+    _ssl_context: ssl.SSLContext | None
 
     def __init__(
         self,
@@ -42,6 +48,7 @@ class AsyncClient:
         self._addr = None
 
         self._auth_fut = None
+        self._ssl_context = None
 
     @property
     def addr(self) -> str:
@@ -59,9 +66,9 @@ class AsyncClient:
     ) -> AsyncIterator[Self]:
         self._addr = f"{host}:{port}"  # FIXME: must be canonicalized
         self._auth_fut = maybe_create_fut(self._auth_fut)
+        self._ssl_context = ssl
         try:
-            connector = asyncio.open_connection(host, port, ssl=ssl)
-            self._reader, self._writer = await connector
+            self._reader, self._writer = await asyncio.open_connection(host, port)
         except BaseException:
             self._set_authentication(None)
             raise
@@ -119,7 +126,7 @@ class AsyncClient:
 
             events, outgoing = self._protocol.receive_bytes(data)
             writer.write(outgoing)
-            self._handle_events(events)
+            await self._handle_events(events)
             await writer.drain()  # exert backpressure
 
     def _on_read_task_done(self, task: asyncio.Task) -> None:
@@ -127,7 +134,7 @@ class AsyncClient:
 
     async def _handshake(self) -> bool | None:
         assert self._writer is not None
-        data = self._protocol.authenticate()
+        data = self._protocol.hello()
         self._writer.write(data)
         return await self._wait_for_authentication()
 
@@ -135,17 +142,33 @@ class AsyncClient:
         self._auth_fut = maybe_create_fut(self._auth_fut)
         return await asyncio.shield(self._auth_fut)
 
-    def _handle_events(self, events: list[ClientEvent]) -> None:
+    async def _handle_events(self, events: list[ClientEvent]) -> None:
         for event in events:
-            self._handle_event(event)
+            await self._handle_event(event)
 
-    def _handle_event(self, event: ClientEvent) -> None:
-        if isinstance(event, ClientEventIncompatibleVersion):
+    async def _handle_event(self, event: ClientEvent) -> None:
+        if isinstance(event, ClientEventHello):
+            if event.using_ssl:
+                await self._upgrade_to_ssl()
+            elif self._ssl_context is not None:
+                raise ServerCannotUpgradeSSLError()
+
+            assert self._writer is not None
+            data = self._protocol.authenticate()
+            self._writer.write(data)
+        elif isinstance(event, ClientEventIncompatibleVersion):
             assert self._writer is not None
             self._writer.close()
         elif isinstance(event, ClientEventAuthentication):
             self._set_authentication(event.success)
         self._dispatch_event(event)
+
+    async def _upgrade_to_ssl(self) -> None:
+        if self._ssl_context is None:
+            raise ClientCannotUpgradeSSLError()
+
+        assert self._writer is not None
+        await self._writer.start_tls(self._ssl_context)
 
     def _set_authentication(self, result: bool | None) -> None:
         assert self._auth_fut is not None

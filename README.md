@@ -63,15 +63,20 @@ ACKNOWLEDGE_AUTHENTICATION before they can begin chat communications.
 When the client disconnects and reconnects, they MUST re-send hello
 and re-authenticate with the server.
 
+If the server supports SSL, they can set `using SSL` in HELLO to indicate
+that the client should upgrade the connection to SSL.
+At this point, the protocol should not receive any data until after the
+SSL handshake is complete.
+
 As this protocol has been intentionally designed to be simple (no timeouts
 or keep alives), I/O wrappers do not need a significant amount of work to
 implement it.
 
 ## TLS Encryption
 
-Independent of the Dumdum protocol, `dumdum-server` can use SSL certificates
-to encrypt connections. For example, if you want to use a self-signed certificate
-and private key, you can install OpenSSL and run the following command:
+`dumdum-server` can use SSL certificates to encrypt connections.
+For example, if you want to use a self-signed certificate and private key,
+you can install OpenSSL and run the following command:
 
 ```sh
 openssl req -new -x509 -days 365 -nodes -out dumdum.crt -keyout dumdum.key
@@ -85,7 +90,5 @@ dumdum-server --cert dumdum.crt:dumdum.key
 ```
 
 As for the `dumdum` client, SSL can be enabled by the user before connecting
-to a server, but they must know beforehand if the server is also using SSL,
-otherwise the client may not behave properly.
-If the server uses a self-signed certificate, the user will need to download
-the server's certificate (.crt) and select it.
+to a server. If the server uses a self-signed certificate, the user will need
+to download the server's certificate (.crt) and select it.
