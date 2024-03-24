@@ -65,10 +65,9 @@ implement it.
 
 ## TLS Encryption
 
-Currently, servers are required to provide an X.509 certificate and private key
-in order to encrypt their connections. Assuming you have OpenSSL installed,
-you can do the following to generate a private key and self-signed certificate
-in one file:
+Independent of the Dumdum protocol, `dumdum-server` can use SSL certificates
+to encrypt connections. For example, if you want to use a self-signed certificate
+and private key, you can install OpenSSL and run the following command:
 
 ```sh
 openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.pem

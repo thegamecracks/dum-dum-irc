@@ -58,8 +58,8 @@ def main():
     )
     parser.add_argument(
         "--cert",
+        default="",
         help="The SSL certificate to use (.pem)",
-        required=True,
         type=parse_cert,
     )
 
@@ -90,10 +90,12 @@ def get_default_channels() -> list[Channel]:
     return [Channel("general")]
 
 
-def parse_cert(s: str) -> ssl.SSLContext:
+def parse_cert(s: str) -> ssl.SSLContext | None:
+    if s == "":
+        return
+
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    if s != "":
-        context.load_cert_chain(s)
+    context.load_cert_chain(s)
     return context
 
 
