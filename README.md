@@ -81,5 +81,8 @@ you can then run the server with the resulting `cert.pem` file:
 dumdum-server --cert cert.pem
 ```
 
-As for the `dumdum` client, it can no longer connect to servers that
-do not use TLS.
+As for the `dumdum` client, SSL can be enabled by the user before connecting
+to a server, but they must know beforehand if the server is also using SSL,
+otherwise the client may not behave properly.
+If the server uses a self-signed certificate, the user will need to download
+the server's certificate and select it.
