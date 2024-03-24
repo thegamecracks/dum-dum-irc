@@ -41,23 +41,27 @@ communication between the server and its clients.
 
 Clients are able to send the following messages:
 
-1. AUTHENTICATE: `0x00 | 1-byte version | varchar nickname (32)`
-2. SEND_MESSAGE: `0x01 | varchar channel name (32) | varchar content (1024)`
-3. LIST_CHANNELS: `0x02`
-4. LIST_MESSAGES: `0x03 | 8-byte before snowflake or 0 | 8-byte after snowflake or 0`
-
-Clients must send an AUTHENTICATE command before they can begin chat
-communications.
+1. HELLO: `0x00`
+2. AUTHENTICATE: `0x02 | 1-byte version | varchar nickname (32)`
+3. SEND_MESSAGE: `0x03 | varchar channel name (32) | varchar content (1024)`
+4. LIST_CHANNELS: `0x04`
+5. LIST_MESSAGES: `0x05 | 8-byte before snowflake or 0 | 8-byte after snowflake or 0`
 
 Servers are able to send the following messages:
 
-1. INCOMPATIBLE_VERSION: `0x00 | 1-byte version`
-2. ACKNOWLEDGE_AUTHENTICATION: `0x01 | 0 or 1 success`
-3. SEND_MESSAGE: `0x02 | 8-byte snowflake | varchar channel name (32) | varchar nickname (32) | varchar content (1024)`
-4. LIST_CHANNELS: `0x03 | 2-byte length | varchar channel name (32) | ...`
-5. LIST_MESSAGES: `0x04 | 3-byte length | same fields after SEND_MESSAGE | ...`
+1. HELLO: `0x00 | 0 or 1 using SSL`
+2. INCOMPATIBLE_VERSION: `0x01 | 1-byte version`
+3. ACKNOWLEDGE_AUTHENTICATION: `0x02 | 0 or 1 success`
+4. SEND_MESSAGE: `0x03 | 8-byte snowflake | varchar channel name (32) | varchar nickname (32) | varchar content (1024)`
+5. LIST_CHANNELS: `0x04 | 2-byte length | varchar channel name (32) | ...`
+6. LIST_MESSAGES: `0x05 | 3-byte length | same fields after SEND_MESSAGE | ...`
 
-When the client disconnects and reconnects, they MUST re-authenticate with the server.
+Clients must send a HELLO command and wait for the server to respond with HELLO.
+Afterwards the client must send an AUTHENTICATE command and wait for a successful
+ACKNOWLEDGE_AUTHENTICATION before they can begin chat communications.
+
+When the client disconnects and reconnects, they MUST re-send hello
+and re-authenticate with the server.
 
 As this protocol has been intentionally designed to be simple (no timeouts
 or keep alives), I/O wrappers do not need a significant amount of work to

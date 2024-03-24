@@ -15,12 +15,14 @@ from .events import (
     ClientEvent,
     ClientEventAuthentication,
     ClientEventChannelsListed,
+    ClientEventHello,
     ClientEventIncompatibleVersion,
     ClientEventMessageReceived,
     ClientEventMessagesListed,
 )
 from .messages import (
     ClientMessageAuthenticate,
+    ClientMessageHello,
     ClientMessageListChannels,
     ClientMessageListMessages,
     ClientMessagePost,
@@ -30,24 +32,29 @@ ParsedData = tuple[list[ClientEvent], bytes]
 
 
 class ClientState(Enum):
-    AWAITING_AUTHENTICATION = 0
-    READY = 1
+    AWAITING_HELLO = 0
+    AWAITING_AUTHENTICATION = 1
+    READY = 2
 
 
 class Client(Protocol):
     """The client connected to a server."""
 
-    PROTOCOL_VERSION = 1
+    PROTOCOL_VERSION = 2
 
     def __init__(self, nick: str) -> None:
         self.nick = nick
 
         self._buffer = bytearray()
-        self._state = ClientState.AWAITING_AUTHENTICATION
+        self._state = ClientState.AWAITING_HELLO
 
     def receive_bytes(self, data: bytes) -> ParsedData:
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
+
+    def hello(self) -> bytes:
+        self._assert_state(ClientState.AWAITING_HELLO)
+        return bytes(ClientMessageHello())
 
     def authenticate(self) -> bytes:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
@@ -111,7 +118,9 @@ class Client(Protocol):
         except ValueError:
             raise MalformedDataError(f"Unknown message type {n}") from None
 
-        if t == ServerMessageType.INCOMPATIBLE_VERSION:
+        if t == ServerMessageType.HELLO:
+            return self._parse_hello(reader)
+        elif t == ServerMessageType.INCOMPATIBLE_VERSION:
             return self._parse_incompatible_version(reader)
         elif t == ServerMessageType.ACKNOWLEDGE_AUTHENTICATION:
             return self._accept_authentication(reader)
@@ -123,6 +132,15 @@ class Client(Protocol):
             return self._parse_message_list(reader)
 
         raise RuntimeError(f"No handler for {t}")  # pragma: no cover
+
+    def _parse_hello(self, reader: Reader) -> ParsedData:
+        self._assert_state(ClientState.AWAITING_HELLO)
+
+        using_ssl = int.from_bytes(reader.readexactly(1), byteorder="big") > 0
+        event = ClientEventHello(using_ssl)
+
+        self._state = ClientState.AWAITING_AUTHENTICATION
+        return [event], b""
 
     def _parse_incompatible_version(self, reader: Reader) -> ParsedData:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)

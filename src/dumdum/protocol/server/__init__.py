@@ -1,6 +1,7 @@
 from .events import (
     ServerEvent,
     ServerEventAuthentication,
+    ServerEventHello,
     ServerEventIncompatibleVersion,
     ServerEventListChannels,
     ServerEventListMessages,
@@ -8,6 +9,7 @@ from .events import (
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
+    ServerMessageHello,
     ServerMessageListChannels,
     ServerMessageListMessages,
     ServerMessagePost,

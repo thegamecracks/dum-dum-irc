@@ -7,6 +7,7 @@ from dumdum.protocol import (
     Client,
     ClientEventAuthentication,
     ClientEventChannelsListed,
+    ClientEventHello,
     ClientEventIncompatibleVersion,
     ClientEventMessagesListed,
     ClientState,
@@ -16,6 +17,7 @@ from dumdum.protocol import (
     Protocol,
     Server,
     ServerEventAuthentication,
+    ServerEventHello,
     ServerEventIncompatibleVersion,
     ServerEventListChannels,
     ServerEventListMessages,
@@ -70,6 +72,15 @@ def test_authenticate():
     client = Client(nick=nick)
     server = Server()
 
+    client_events, server_events = communicate(client, client.hello(), server)
+    assert client_events == []
+    assert server_events == [ServerEventHello()]
+
+    data = server.hello(using_ssl=False)
+    server_events, client_events = communicate(server, data, client)
+    assert client_events == [ClientEventHello(using_ssl=False)]
+    assert server_events == []
+
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert client_events == []
     assert server_events == [ServerEventAuthentication(nick=nick)]
@@ -90,6 +101,9 @@ def test_authenticate_incompatible_version():
         client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
 
     assert client.PROTOCOL_VERSION != server.PROTOCOL_VERSION
+
+    communicate(client, client.hello(), server)
+    communicate(server, server.hello(using_ssl=False), client)
 
     client_events, server_events = communicate(client, client.authenticate(), server)
     assert client_events == [
@@ -113,6 +127,8 @@ def test_send_message():
     client = Client(nick=nick)
     server = Server()
 
+    communicate(client, client.hello(), server)
+    communicate(server, server.hello(using_ssl=False), client)
     communicate(client, client.authenticate(), server)
     communicate(server, server.authenticate(success=True), client)
 
@@ -137,6 +153,8 @@ def test_list_channels():
     client = Client(nick="thegamecracks")
     server = Server()
 
+    communicate(client, client.hello(), server)
+    communicate(server, server.hello(using_ssl=False), client)
     communicate(client, client.authenticate(), server)
     communicate(server, server.authenticate(success=True), client)
 
@@ -193,6 +211,8 @@ def test_list_messages():
     client = Client(nick=nick)
     server = Server()
 
+    communicate(client, client.hello(), server)
+    communicate(server, server.hello(using_ssl=False), client)
     communicate(client, client.authenticate(), server)
     communicate(server, server.authenticate(success=True), client)
 
@@ -225,15 +245,17 @@ def test_unicode_decode_error():
     client = Client("thegamecracks")
     server = Server()
 
+    communicate(client, client.hello(), server)
+    communicate(server, server.hello(using_ssl=False), client)
     communicate(client, client.authenticate(), server)
     communicate(server, server.authenticate(success=True), client)
 
     with pytest.raises(MalformedDataError):
         # LIST_CHANNELS, Channel name \N{EYES} but missing last 3 bytes
-        data = b"\x03\x00\x02\x01\xf0"
+        data = b"\x04\x00\x02\x01\xf0"
         client.receive_bytes(data)
 
     with pytest.raises(MalformedDataError):
         # SEND_MESSAGE, Channel name \N{EYES} but missing last 3 bytes
-        data = b"\x01\x01\xf0"
+        data = b"\x03\x01\xf0"
         server.receive_bytes(data)

@@ -16,6 +16,7 @@ from dumdum.protocol.reader import Reader, bytearray_reader
 from .events import (
     ServerEvent,
     ServerEventAuthentication,
+    ServerEventHello,
     ServerEventIncompatibleVersion,
     ServerEventListChannels,
     ServerEventListMessages,
@@ -23,6 +24,7 @@ from .events import (
 )
 from .messages import (
     ServerMessageAcknowledgeAuthentication,
+    ServerMessageHello,
     ServerMessageListChannels,
     ServerMessageListMessages,
     ServerMessagePost,
@@ -33,22 +35,27 @@ ParsedData = tuple[list[ServerEvent], bytes]
 
 
 class ServerState(Enum):
-    AWAITING_AUTHENTICATION = 0
-    READY = 1
+    AWAITING_HELLO = 0
+    AWAITING_AUTHENTICATION = 1
+    READY = 2
 
 
 class Server(Protocol):
     """The server for a single client."""
 
-    PROTOCOL_VERSION = 1
+    PROTOCOL_VERSION = 2
 
     def __init__(self) -> None:
         self._buffer = bytearray()
-        self._state = ServerState.AWAITING_AUTHENTICATION
+        self._state = ServerState.AWAITING_HELLO
 
     def receive_bytes(self, data: bytes) -> ParsedData:
         self._buffer.extend(data)
         return self._maybe_parse_buffer()
+
+    def hello(self, *, using_ssl: bool) -> bytes:
+        self._assert_state(ServerState.AWAITING_AUTHENTICATION)
+        return bytes(ServerMessageHello(using_ssl))
 
     def authenticate(self, *, success: bool) -> bytes:
         self._assert_state(ServerState.AWAITING_AUTHENTICATION)
@@ -97,7 +104,9 @@ class Server(Protocol):
         except ValueError:
             raise MalformedDataError(f"Unknown message type {n}") from None
 
-        if t == ClientMessageType.AUTHENTICATE:
+        if t == ClientMessageType.HELLO:
+            return self._parse_hello(reader)
+        elif t == ClientMessageType.AUTHENTICATE:
             return self._authenticate(reader)
         elif t == ClientMessageType.SEND_MESSAGE:
             return self._send_message(reader)
@@ -107,6 +116,12 @@ class Server(Protocol):
             return self._list_messages(reader)
 
         raise RuntimeError(f"No handler for {t}")  # pragma: no cover
+
+    def _parse_hello(self, reader: Reader) -> ParsedData:
+        self._assert_state(ServerState.AWAITING_HELLO)
+        event = ServerEventHello()
+        self._state = ServerState.AWAITING_AUTHENTICATION
+        return [event], b""
 
     def _authenticate(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.AWAITING_AUTHENTICATION)

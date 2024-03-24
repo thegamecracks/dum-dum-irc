@@ -11,6 +11,13 @@ class ClientEvent:
 
 
 @dataclass
+class ClientEventHello(ClientEvent):
+    """The server responded to our hello."""
+
+    using_ssl: bool
+
+
+@dataclass
 class ClientEventIncompatibleVersion(ClientEvent):
     """The server does not support our protocol version."""
 

@@ -7,6 +7,11 @@ class ServerEvent:
 
 
 @dataclass
+class ServerEventHello(ServerEvent):
+    """The client says hello."""
+
+
+@dataclass
 class ServerEventIncompatibleVersion(ServerEvent):
     """The client tried using an incompatible protocol version."""
 

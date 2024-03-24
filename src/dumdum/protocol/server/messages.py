@@ -11,6 +11,14 @@ from dumdum.protocol.message import Message
 
 
 @dataclass
+class ServerMessageHello:
+    using_ssl: bool
+
+    def __bytes__(self) -> bytes:
+        return bytes([ServerMessageType.HELLO.value, self.using_ssl])
+
+
+@dataclass
 class ServerMessageSendIncompatibleVersion:
     required: int
 

@@ -10,6 +10,12 @@ from dumdum.protocol.enums import ClientMessageType
 
 
 @dataclass
+class ClientMessageHello:
+    def __bytes__(self) -> bytes:
+        return bytes([ClientMessageType.HELLO.value])
+
+
+@dataclass
 class ClientMessageAuthenticate:
     version: int
     nick: str
