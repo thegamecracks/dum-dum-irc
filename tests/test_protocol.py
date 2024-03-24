@@ -102,10 +102,7 @@ def test_authenticate_incompatible_version():
 
     assert client.PROTOCOL_VERSION != server.PROTOCOL_VERSION
 
-    communicate(client, client.hello(), server)
-    communicate(server, server.hello(using_ssl=False), client)
-
-    client_events, server_events = communicate(client, client.authenticate(), server)
+    client_events, server_events = communicate(client, client.hello(), server)
     assert client_events == [
         ClientEventIncompatibleVersion(
             client_version=client.PROTOCOL_VERSION,

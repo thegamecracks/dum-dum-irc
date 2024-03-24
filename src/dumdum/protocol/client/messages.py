@@ -11,20 +11,25 @@ from dumdum.protocol.enums import ClientMessageType
 
 @dataclass
 class ClientMessageHello:
+    version: int
+
     def __bytes__(self) -> bytes:
-        return bytes([ClientMessageType.HELLO.value])
+        return bytes(
+            [
+                ClientMessageType.HELLO.value,
+                self.version,
+            ]
+        )
 
 
 @dataclass
 class ClientMessageAuthenticate:
-    version: int
     nick: str
 
     def __bytes__(self) -> bytes:
         return bytes(
             [
                 ClientMessageType.AUTHENTICATE.value,
-                self.version,
                 *varchar.dumps(self.nick, max_length=MAX_NICK_LENGTH),
             ]
         )

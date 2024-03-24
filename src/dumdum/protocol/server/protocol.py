@@ -119,21 +119,20 @@ class Server(Protocol):
 
     def _parse_hello(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.AWAITING_HELLO)
+
+        version = reader.readexactly(1)[0]
+        if version != self.PROTOCOL_VERSION:
+            event = ServerEventIncompatibleVersion(version)
+            response = ServerMessageSendIncompatibleVersion(self.PROTOCOL_VERSION)
+            return [event], bytes(response)
+
         event = ServerEventHello()
         self._state = ServerState.AWAITING_AUTHENTICATION
         return [event], b""
 
     def _authenticate(self, reader: Reader) -> ParsedData:
         self._assert_state(ServerState.AWAITING_AUTHENTICATION)
-
-        version = reader.readexactly(1)[0]
         nick = reader.read_varchar(max_length=MAX_NICK_LENGTH)
-
-        if version != self.PROTOCOL_VERSION:
-            event = ServerEventIncompatibleVersion(version)
-            response = ServerMessageSendIncompatibleVersion(self.PROTOCOL_VERSION)
-            return [event], bytes(response)
-
         event = ServerEventAuthentication(nick=nick)
         return [event], b""
 

@@ -41,8 +41,8 @@ communication between the server and its clients.
 
 Clients are able to send the following messages:
 
-1. HELLO: `0x00`
-2. AUTHENTICATE: `0x02 | 1-byte version | varchar nickname (32)`
+1. HELLO: `0x00 | 1-byte version`
+2. AUTHENTICATE: `0x02 | varchar nickname (32)`
 3. SEND_MESSAGE: `0x03 | varchar channel name (32) | varchar content (1024)`
 4. LIST_CHANNELS: `0x04`
 5. LIST_MESSAGES: `0x05 | 8-byte before snowflake or 0 | 8-byte after snowflake or 0`

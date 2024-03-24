@@ -54,16 +54,11 @@ class Client(Protocol):
 
     def hello(self) -> bytes:
         self._assert_state(ClientState.AWAITING_HELLO)
-        return bytes(ClientMessageHello())
+        return bytes(ClientMessageHello(self.PROTOCOL_VERSION))
 
     def authenticate(self) -> bytes:
         self._assert_state(ClientState.AWAITING_AUTHENTICATION)
-        return bytes(
-            ClientMessageAuthenticate(
-                version=self.PROTOCOL_VERSION,
-                nick=self.nick,
-            )
-        )
+        return bytes(ClientMessageAuthenticate(self.nick))
 
     def send_message(self, channel_name: str, content: str) -> bytes:
         self._assert_state(ClientState.READY)
@@ -143,7 +138,7 @@ class Client(Protocol):
         return [event], b""
 
     def _parse_incompatible_version(self, reader: Reader) -> ParsedData:
-        self._assert_state(ClientState.AWAITING_AUTHENTICATION)
+        self._assert_state(ClientState.AWAITING_HELLO)
         version = reader.readexactly(1)[0]
         event = ClientEventIncompatibleVersion(version, self.PROTOCOL_VERSION)
         return [event], b""
