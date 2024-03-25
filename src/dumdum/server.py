@@ -20,7 +20,6 @@ import ssl
 from dumdum.logging import configure_logging
 from dumdum.protocol import (
     Channel,
-    HighCommand,
     InvalidStateError,
     Message,
     Server,
@@ -32,6 +31,8 @@ from dumdum.protocol import (
     ServerEventMessageReceived,
     create_snowflake,
 )
+
+from .highcommand import HighCommand
 
 log = logging.getLogger(__name__)
 

@@ -2,8 +2,8 @@ import bisect
 import collections
 from typing import Sequence, TypeAlias
 
-from .channel import Channel
-from .message import Message
+from .protocol.channel import Channel
+from .protocol.message import Message
 
 User: TypeAlias = str
 
