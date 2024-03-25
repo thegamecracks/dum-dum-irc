@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Move `dumdum.protocol.HighCommand` to `dumdum.highcommand.HighCommand`
+- Move `dumdum.protocol.HighCommand` to `dumdum.server_state.ServerState`
 
 ### Fixed
 

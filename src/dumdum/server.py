@@ -32,7 +32,7 @@ from dumdum.protocol import (
     create_snowflake,
 )
 
-from .highcommand import HighCommand
+from .server_state import ServerState
 
 log = logging.getLogger(__name__)
 
@@ -83,12 +83,12 @@ def main():
 
     configure_logging(verbose)
 
-    hc = HighCommand()
+    state = ServerState()
     for channel in channels:
-        hc.add_channel(channel)
+        state.add_channel(channel)
 
     try:
-        asyncio.run(host_server(hc, host, port, ssl=ssl))
+        asyncio.run(host_server(state, host, port, ssl=ssl))
     except KeyboardInterrupt:
         pass
 
@@ -114,13 +114,13 @@ def parse_cert(s: str) -> ssl.SSLContext | None:
 
 
 async def host_server(
-    hc: HighCommand,
+    state: ServerState,
     host: str | None,
     port: int,
     *,
     ssl: ssl.SSLContext | None,
 ) -> None:
-    manager = Manager(hc, ssl)
+    manager = Manager(state, ssl)
     server = await asyncio.start_server(
         manager.accept_connection,
         host=host,
@@ -131,8 +131,8 @@ async def host_server(
 
 
 class Manager:
-    def __init__(self, hc: HighCommand, ssl: ssl.SSLContext | None) -> None:
-        self.hc = hc
+    def __init__(self, state: ServerState, ssl: ssl.SSLContext | None) -> None:
+        self.state = state
         self.connections: list[Connection] = []
         self.ssl = ssl
 
@@ -201,9 +201,9 @@ class Manager:
             await conn.writer.start_tls(self.ssl)
 
     def _authenticate(self, conn: Connection, event: ServerEventAuthentication) -> None:
-        user = self.hc.get_user(event.nick)
+        user = self.state.get_user(event.nick)
         if user is None:
-            self.hc.add_user(event.nick)
+            self.state.add_user(event.nick)
             conn.nick = event.nick
             success = True
         else:
@@ -219,7 +219,7 @@ class Manager:
     ) -> None:
         assert conn.nick is not None
 
-        if self.hc.get_channel(event.channel_name) is None:
+        if self.state.get_channel(event.channel_name) is None:
             return
 
         message = Message(
@@ -228,7 +228,7 @@ class Manager:
             conn.nick,
             event.content,
         )
-        self.hc.add_message(message)
+        self.state.add_message(message)
 
         for peer in self.connections:
             with contextlib.suppress(InvalidStateError):
@@ -236,11 +236,11 @@ class Manager:
                 peer.writer.write(data)
 
     def _list_channels(self, conn: Connection, event: ServerEventListChannels) -> None:
-        data = conn.server.list_channels(self.hc.channels)
+        data = conn.server.list_channels(self.state.channels)
         conn.writer.write(data)
 
     def _list_messages(self, conn: Connection, event: ServerEventListMessages) -> None:
-        messages = self.hc.get_messages(
+        messages = self.state.get_messages(
             event.channel_name,
             before=event.before,
             after=event.after,
@@ -251,7 +251,7 @@ class Manager:
     def _close_connection(self, conn: Connection) -> None:
         self.connections.remove(conn)
         if conn.nick is not None:
-            self.hc.remove_user(conn.nick)
+            self.state.remove_user(conn.nick)
 
 
 class Connection:

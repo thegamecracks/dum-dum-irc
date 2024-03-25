@@ -8,7 +8,7 @@ from .protocol.message import Message
 User: TypeAlias = str
 
 
-class HighCommand:
+class ServerState:
     def __init__(self) -> None:
         self._channels: dict[str, Channel] = {}
         self._messages: dict[str, list[Message]] = collections.defaultdict(list)
