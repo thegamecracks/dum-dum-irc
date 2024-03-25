@@ -34,6 +34,18 @@ def has_exception(
     return isinstance(exc, base)
 
 
+def is_self_signed_certificate_exception(exc: BaseException) -> bool:
+    def predicate(exc: BaseException) -> bool:
+        if not isinstance(exc, ssl.SSLCertVerificationError):
+            return False
+        # https://www.openssl.org/docs/man1.0.2/man1/verify.html
+        return exc.verify_code == 18
+
+    if not isinstance(exc, BaseExceptionGroup):
+        exc = BaseExceptionGroup("", [exc])
+    return exc.subgroup(predicate) is not None
+
+
 class ClientStoreFactory(Protocol):
     def __call__(self) -> ContextManager[ClientStore]: ...
 
@@ -189,6 +201,14 @@ class TkApp(Tk):
                 "Cannot Upgrade SSL",
                 "The server is unable to use SSL encryption. If you still want to "
                 "connect using an insecure connection, you must turn off SSL.",
+            )
+        elif is_self_signed_certificate_exception(exc):
+            log.info("Cannot connect to server, self-signed certificate must be provided")
+            messagebox.showerror(
+                "Cannot Upgrade SSL",
+                "The server is using a self-signed certificate. In order to "
+                "connect, you must download their certificate from a trusted "
+                "source and then specify it in the certificate field.",
             )
         elif isinstance(exc, BaseExceptionGroup) and len(exc.exceptions) == 1:
             first_exception = exc.exceptions[0]
