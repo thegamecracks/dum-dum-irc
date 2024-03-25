@@ -16,7 +16,7 @@ import ssl
 from dumdum.protocol import Channel
 from dumdum.logging import configure_logging
 
-from .manager import Manager
+from .manager import host_server
 from .state import ServerState
 
 
@@ -94,23 +94,6 @@ def parse_cert(s: str) -> ssl.SSLContext | None:
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain(cafile, keyfile)
     return context
-
-
-async def host_server(
-    state: ServerState,
-    host: str | None,
-    port: int,
-    *,
-    ssl: ssl.SSLContext | None,
-) -> None:
-    manager = Manager(state, ssl)
-    server = await asyncio.start_server(
-        manager.accept_connection,
-        host=host,
-        port=port,
-    )
-    async with server:
-        await server.serve_forever()
 
 
 if __name__ == "__main__":

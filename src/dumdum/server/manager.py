@@ -144,3 +144,20 @@ class Manager:
         self.connections.remove(conn)
         if conn.nick is not None:
             self.state.remove_user(conn.nick)
+
+
+async def host_server(
+    state: ServerState,
+    host: str | None,
+    port: int,
+    *,
+    ssl: ssl.SSLContext | None,
+) -> None:
+    manager = Manager(state, ssl)
+    server = await asyncio.start_server(
+        manager.accept_connection,
+        host=host,
+        port=port,
+    )
+    async with server:
+        await server.serve_forever()
