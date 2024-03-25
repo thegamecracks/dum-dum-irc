@@ -5,7 +5,7 @@ import queue
 import ssl
 from tkinter import Event, Tk, messagebox
 from tkinter.ttk import Frame
-from typing import Any, Awaitable, ContextManager, Protocol, runtime_checkable
+from typing import Any, Awaitable, ContextManager, Protocol, Type, runtime_checkable
 
 from dumdum.protocol import (
     ClientEvent,
@@ -23,6 +23,15 @@ from .event_thread import EventThread
 from .store import ClientStore
 
 log = logging.getLogger(__name__)
+
+
+def has_exception(
+    exc: BaseException,
+    base: Type[BaseException] | tuple[Type[BaseException], ...],
+) -> bool:
+    if isinstance(exc, BaseExceptionGroup):
+        return exc.subgroup(base) is not None
+    return isinstance(exc, base)
 
 
 class ClientStoreFactory(Protocol):
@@ -164,26 +173,17 @@ class TkApp(Tk):
         elif isinstance(exc, asyncio.CancelledError):
             # The user wants to close the GUI
             return
-        elif (
-            isinstance(exc, BaseExceptionGroup)
-            and exc.subgroup(AuthenticationFailedError) is not None
-        ):
+        elif has_exception(exc, AuthenticationFailedError):
             # Handled via ClientEventAuthentication
             return
-        elif (
-            isinstance(exc, BaseExceptionGroup)
-            and exc.subgroup(ClientCannotUpgradeSSLError) is not None
-        ):
+        elif has_exception(exc, ClientCannotUpgradeSSLError):
             log.info("Cannot connect to server, enabling SSL is required")
             messagebox.showerror(
                 "Cannot Upgrade SSL",
                 "The server requires SSL encryption. You must turn on SSL, "
                 "which may require a self-signed certificate from them.",
             )
-        elif (
-            isinstance(exc, BaseExceptionGroup)
-            and exc.subgroup(ServerCannotUpgradeSSLError) is not None
-        ):
+        elif has_exception(exc, ServerCannotUpgradeSSLError):
             log.info("Cannot connect to server, disabling SSL is required")
             messagebox.showerror(
                 "Cannot Upgrade SSL",
