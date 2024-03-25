@@ -6,10 +6,19 @@ from weakref import WeakSet
 class ScrollableFrame(Frame):
     _last_scrollregion: tuple[int, int, int, int] | None
 
-    def __init__(self, *args, autoscroll: bool = False, **kwargs):
+    def __init__(
+        self,
+        *args,
+        autoscroll: bool = False,
+        xscroll: bool = False,
+        yscroll: bool = False,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         self.autoscroll = autoscroll
+        self.xscroll = xscroll
+        self.yscroll = yscroll
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -60,8 +69,13 @@ class ScrollableFrame(Frame):
 
         # self._canvas.bbox("all") doesn't update until window resize
         # so we're relying on the inner frame's requested height instead.
-        new_width = max(self._canvas.winfo_width(), self.inner.winfo_reqwidth())
-        new_height = max(self._canvas.winfo_height(), self.inner.winfo_reqheight())
+        new_width = self._canvas.winfo_width()
+        new_height = self._canvas.winfo_height()
+        if self.xscroll:
+            new_width = max(new_width, self.inner.winfo_reqwidth())
+        if self.yscroll:
+            new_height = max(new_height, self.inner.winfo_reqheight())
+
         bbox = (0, 0, new_width, new_height)
         self._canvas.configure(scrollregion=bbox)
         self._canvas.itemconfigure(self._inner_id, width=new_width, height=new_height)
