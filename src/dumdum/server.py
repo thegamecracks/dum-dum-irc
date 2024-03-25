@@ -1,10 +1,10 @@
 """Host a dumdum server.
 
 To use TLS encryption, you must provide a certificate and private key.
-This can be specified in one of two ways:
-1. Specify a single file containing the private key and certificate:
+This can be specified as either:
+1. A single file containing both the private key and certificate:
      --cert hello.pem
-2. Specify the certificate and private key in separate files:
+2. A pair of certificate and private key files, separated with a colon:
      --cert hello.crt:hello.key
 
 """
