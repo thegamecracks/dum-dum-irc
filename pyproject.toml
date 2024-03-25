@@ -18,7 +18,7 @@ dependencies = [
 
 [project.scripts]
 dumdum = "dumdum.client.__main__:main"
-dumdum-server = "dumdum.server:main"
+dumdum-server = "dumdum.server.__main__:main"
 
 [project.optional-dependencies]
 tests = [

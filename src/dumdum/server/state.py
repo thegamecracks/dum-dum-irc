@@ -2,8 +2,7 @@ import bisect
 import collections
 from typing import Sequence, TypeAlias
 
-from .protocol.channel import Channel
-from .protocol.message import Message
+from dumdum.protocol import Channel, Message
 
 User: TypeAlias = str
 

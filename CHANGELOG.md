@@ -8,7 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
-- Move `dumdum.protocol.HighCommand` to `dumdum.server_state.ServerState`
+- Refactor `dumdum.server` into a package
+  - `main()` is no longer exported, requiring the `dumdum-server` console script
+    to be changed. The package must be reinstalled for this change to apply,
+    otherwise `dumdum-server` will raise ImportError.
+- Move `dumdum.protocol.HighCommand` to `dumdum.server.ServerState`
 
 ### Fixed
 
