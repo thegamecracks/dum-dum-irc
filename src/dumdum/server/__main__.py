@@ -62,7 +62,7 @@ def main():
     channels: list[Channel] = args.channels or get_default_channels()
     host: str | None = args.host
     port: int = args.port
-    ssl: ssl.SSLContext | None = args.cert
+    ssl_context: ssl.SSLContext | None = args.cert
 
     configure_logging(verbose)
 
@@ -71,7 +71,7 @@ def main():
         state.add_channel(channel)
 
     try:
-        asyncio.run(host_server(state, host, port, ssl=ssl))
+        asyncio.run(host_server(state, host, port, ssl=ssl_context))
     except KeyboardInterrupt:
         pass
 
