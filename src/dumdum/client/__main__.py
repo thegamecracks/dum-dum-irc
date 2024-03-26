@@ -41,7 +41,7 @@ def main():
     verbose: int = args.verbose
     mode: str = args.mode
 
-    configure_logging(verbose)
+    configure_logging("client", verbose)
     enable_windows_dpi_awareness()
 
     if mode == "gui":
@@ -73,6 +73,7 @@ def show_appdirs() -> None:
     from dumdum.appdirs import APP_DIRS
 
     print("user_data_path =", APP_DIRS.user_data_path)
+    print("user_log_path =", APP_DIRS.user_log_path)
 
 
 @contextlib.contextmanager

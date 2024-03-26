@@ -64,7 +64,7 @@ def main():
     port: int = args.port
     ssl_context: ssl.SSLContext | None = args.cert
 
-    configure_logging(verbose)
+    configure_logging("server", verbose)
 
     state = ServerState()
     for channel in channels:
