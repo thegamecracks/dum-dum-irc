@@ -45,7 +45,8 @@ def main():
     enable_windows_dpi_awareness()
 
     if mode == "gui":
-        run_gui()
+        with contextlib.suppress(KeyboardInterrupt):
+            run_gui()
     elif mode == "appdirs":
         show_appdirs()
     else:
@@ -62,8 +63,10 @@ def run_gui() -> None:
 
         try:
             app.mainloop()
-        except KeyboardInterrupt:
-            pass
+        except BaseException:
+            app.destroy()
+            app.mainloop()
+            raise
 
 
 def enable_windows_dpi_awareness():
