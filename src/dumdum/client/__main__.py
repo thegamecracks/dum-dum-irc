@@ -59,7 +59,11 @@ def run_gui() -> None:
             store_factory=store_factory,
         )
         app.switch_frame(ConnectFrame(app))
-        app.mainloop()
+
+        try:
+            app.mainloop()
+        except KeyboardInterrupt:
+            pass
 
 
 def enable_windows_dpi_awareness():
@@ -83,7 +87,4 @@ def store_factory() -> Iterator[ClientStore]:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        pass
+    main()
