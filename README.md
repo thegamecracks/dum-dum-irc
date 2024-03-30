@@ -16,7 +16,7 @@ any conventions or RFC standards.
 
 ## Usage
 
-With Python 3.11+ installed, you can get the currently stable version on PyPI:
+With Python 3.11+ installed, you can get the current stable version on PyPI:
 
 ```sh
 pip install dum-dum-irc
