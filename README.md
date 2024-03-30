@@ -1,5 +1,6 @@
 # dum-dum-irc
 
+[![](https://img.shields.io/pypi/v/dum-dum-irc?style=flat-square)](https://pypi.org/project/dum-dum-irc/)
 [![](https://img.shields.io/github/actions/workflow/status/thegamecracks/dum-dum-irc/pyright-lint.yml?style=flat-square&label=pyright)](https://microsoft.github.io/pyright/#/)
 [![](https://img.shields.io/github/actions/workflow/status/thegamecracks/dum-dum-irc/python-test.yml?style=flat-square&logo=pytest&label=tests)](https://docs.pytest.org/en/stable/)
 
@@ -15,13 +16,13 @@ any conventions or RFC standards.
 
 ## Usage
 
-With Python 3.11+ and Git installed, you can install the newest pinned version:
+With Python 3.11+ installed, you can get the currently stable version on PyPI:
 
 ```sh
-pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.4.0
+pip install dum-dum-irc
 ```
 
-Or alternatively you can install the latest development version:
+Or if you have Git, you can install the latest in-development version:
 
 ```sh
 pip install git+https://github.com/thegamecracks/dum-dum-irc
