@@ -28,8 +28,10 @@ Or if you have Git, you can install the latest in-development version:
 pip install git+https://github.com/thegamecracks/dum-dum-irc
 ```
 
-Once installed, the `dumdum` and `dumdum-server` entry points should be
-provided. Run `dumdum-server --help` for options.
+Once installed, you can use the `dumdum` and `dumdum-server` commands.
+Running `dumdum` starts a graphical client which you can use to join
+Dumdum servers, while `dumdum-server` is used to host servers of your own.
+Both support the `-h/--help` option if you want to see more details on their usage.
 
 ## Implementation
 
