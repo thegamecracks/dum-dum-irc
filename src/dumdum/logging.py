@@ -24,7 +24,7 @@ BASE_CONFIG = {
             "formatter": "json",
             "filename": "",  # Filled in by configure_logging()
             "maxBytes": 5_000_000,
-            "backupCount": 9,
+            "backupCount": 3,
         },
     },
     "formatters": {
