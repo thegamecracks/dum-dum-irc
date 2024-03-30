@@ -91,7 +91,7 @@ For example, if you want to use a self-signed certificate and private key,
 you can install OpenSSL and run the following command:
 
 ```sh
-openssl req -new -x509 -days 365 -nodes -out dumdum.crt -keyout dumdum.key
+openssl req -new -x509 -days 365 -noenc -out dumdum.crt -keyout dumdum.key
 ```
 
 After filling out (or skipping) the certificate signing request prompts,
