@@ -6,12 +6,12 @@
 A handcrafted implementation of an internet relay chat without following
 any conventions or RFC standards.
 
-![Two client windows side-by-side](/docs/images/demo.png)
+![Two client windows side-by-side](https://raw.githubusercontent.com/thegamecracks/dum-dum-irc/main/docs/images/demo.png)
 
 ### [Changelog] | [Contributing Guide]
 
-[Changelog]: /CHANGELOG.md
-[Contributing Guide]: /CONTRIBUTING.md
+[Changelog]: https://github.com/thegamecracks/dum-dum-irc/blob/main/CHANGELOG.md
+[Contributing Guide]: https://github.com/thegamecracks/dum-dum-irc/blob/main/CONTRIBUTING.md
 
 ## Usage
 
@@ -44,9 +44,9 @@ communication between the server and its clients.
 
 [Sans-IO]: https://sans-io.readthedocs.io/
 
-[dumdum.protocol]: /src/dumdum/protocol/
-[dumdum.client]: /src/dumdum/client/
-[dumdum.server]: /src/dumdum/server.py
+[dumdum.protocol]: https://github.com/thegamecracks/dum-dum-irc/tree/main/src/dumdum/protocol
+[dumdum.client]: https://github.com/thegamecracks/dum-dum-irc/tree/main/src/dumdum/client
+[dumdum.server]: https://github.com/thegamecracks/dum-dum-irc/tree/main/src/dumdum/server
 
 ## Protocol
 
