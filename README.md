@@ -18,7 +18,7 @@ any conventions or RFC standards.
 With Python 3.11+ and Git installed, you can install the newest pinned version:
 
 ```sh
-pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.3.0
+pip install git+https://github.com/thegamecracks/dum-dum-irc@v0.4.0
 ```
 
 Or alternatively you can install the latest development version:
