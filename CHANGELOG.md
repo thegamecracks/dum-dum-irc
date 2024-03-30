@@ -6,18 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Write `.jsonl` client and server logs to a user log directory
+  - Defaults to INFO logs and above, but can be set to DEBUG with `-vv`
+- Add user log directory to `dumdum appdirs` command
+
 ### Changed
 
+- Rename distribution package name to `dum-dum-irc`
+  - Users of older versions must manually uninstall `dum-dum` beforehand,
+    otherwise they may co-exist in the same environment and cause files to be
+    overwritten.
 - Refactor `dumdum.server` into a package
   - `main()` is no longer exported, requiring the `dumdum-server` console script
     to be changed. The package must be reinstalled for this change to apply,
     otherwise `dumdum-server` will raise ImportError.
-- Move `dumdum.protocol.HighCommand` to `dumdum.server.ServerState`
+  - Move `dumdum.protocol.HighCommand` to `dumdum.server.ServerState`
+- Dumdum client improvements:
+  - Immediately wrap messages when switching between channels
+  - Show dedicated error message for unknown self-signed certificates
 
 ### Fixed
 
-- Graphical improvements to the Dumdum client:
-  - Immediately wrap messages when switching between channels
+- Dumdum client not cleanly exiting when being keyboard interrupted
 
 ## [0.3.0] - 2024-03-24
 
