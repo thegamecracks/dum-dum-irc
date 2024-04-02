@@ -5,6 +5,21 @@ class ProtocolError(Exception):
     """The base class for errors related to the protocol."""
 
 
+class BufferOverflowError(ProtocolError):
+    """The protocol received more data than the buffer could store.
+
+    This may be the result of the buffer size being set too low,
+    or possibly malformed data that the protocol is unable to parse.
+
+    """
+
+    def __init__(self, limit: int, len_buffer: int, len_data: int) -> None:
+        super().__init__(f"Buffer limit cannot be exceeded ({limit:,d} bytes)")
+        self.limit = limit
+        self.len_buffer = len_buffer
+        self.len_data = len_data
+
+
 class MalformedDataError(ProtocolError):
     """Raised when there is unambiguously malformed data.
 

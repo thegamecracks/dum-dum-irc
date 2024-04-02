@@ -31,10 +31,12 @@ from .server import (
     ServerMessageSendIncompatibleVersion,
     ServerState,
 )
+from .buffer import extend_limited_buffer
 from .channel import Channel
 from .constants import MAX_MESSAGE_LENGTH, MAX_NICK_LENGTH
 from .enums import ClientMessageType, ServerMessageType
 from .errors import (
+    BufferOverflowError,
     InvalidLengthError,
     InvalidStateError,
     MalformedDataError,

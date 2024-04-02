@@ -3,6 +3,7 @@ from typing import Sequence, Type, TypeVar
 import pytest
 
 from dumdum.protocol import (
+    BufferOverflowError,
     Channel,
     Client,
     ClientEventAuthentication,
@@ -255,4 +256,18 @@ def test_unicode_decode_error():
     with pytest.raises(MalformedDataError):
         # SEND_MESSAGE, Channel name \N{EYES} but missing last 3 bytes
         data = b"\x03\x01\xf0"
+        server.receive_bytes(data)
+
+
+def test_buffer_overflow_prevention():
+    data = b"Hello world!\n"
+    size = len(data) - 1
+
+    client = Client("thegamecracks", buffer_size=size)
+    server = Server(buffer_size=size)
+
+    with pytest.raises(BufferOverflowError):
+        client.receive_bytes(data)
+
+    with pytest.raises(BufferOverflowError):
         server.receive_bytes(data)

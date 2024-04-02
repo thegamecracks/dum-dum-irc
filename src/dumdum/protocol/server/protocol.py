@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Sequence
 
+from dumdum.protocol.buffer import extend_limited_buffer
 from dumdum.protocol.channel import Channel
 from dumdum.protocol.constants import (
     MAX_CHANNEL_NAME_LENGTH,
@@ -45,12 +46,14 @@ class Server(Protocol):
 
     PROTOCOL_VERSION = 2
 
-    def __init__(self) -> None:
+    def __init__(self, *, buffer_size: int = 2**20) -> None:
+        self.buffer_size = buffer_size
+
         self._buffer = bytearray()
         self._state = ServerState.AWAITING_HELLO
 
     def receive_bytes(self, data: bytes) -> ParsedData:
-        self._buffer.extend(data)
+        extend_limited_buffer(self._buffer, data, limit=self.buffer_size)
         return self._maybe_parse_buffer()
 
     def hello(self, *, using_ssl: bool) -> bytes:
