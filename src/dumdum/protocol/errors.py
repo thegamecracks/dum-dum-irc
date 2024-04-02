@@ -11,6 +11,9 @@ class BufferOverflowError(ProtocolError):
     This may be the result of the buffer size being set too low,
     or possibly malformed data that the protocol is unable to parse.
 
+    Clients and servers, upon receiving this error, should immediately
+    terminate their connection.
+
     """
 
     def __init__(self, limit: int, len_buffer: int, len_data: int) -> None:
