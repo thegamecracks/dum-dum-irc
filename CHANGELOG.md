@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Write/close timeouts for asyncio client and server
+  - This should mitigate deadlocks caused by excessive backpressure
+    on both sides of a connection.
+- Buffer limits for client and server protocols
+  - This defaults to 1MiB, but can be customized or disabled via the
+    `buffer_size=` parameter. Upon exceeding the protocol's buffer,
+    the `receive_bytes()` method will raise `BufferOverflowError`
+    indicating that the connection should be terminated.
+
 ## [0.4.0.post1] - 2024-03-30
 
 This release updates the readme to start referring to our new PyPI distribution! 🎉
