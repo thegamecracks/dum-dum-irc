@@ -46,7 +46,7 @@ class Server(Protocol):
 
     PROTOCOL_VERSION = 2
 
-    def __init__(self, *, buffer_size: int = 2**20) -> None:
+    def __init__(self, *, buffer_size: int | None = 2**20) -> None:
         self.buffer_size = buffer_size
 
         self._buffer = bytearray()

@@ -43,7 +43,7 @@ class Client(Protocol):
 
     PROTOCOL_VERSION = 2
 
-    def __init__(self, nick: str, *, buffer_size: int = 2**20) -> None:
+    def __init__(self, nick: str, *, buffer_size: int | None = 2**20) -> None:
         self.nick = nick
         self.buffer_size = buffer_size
 
