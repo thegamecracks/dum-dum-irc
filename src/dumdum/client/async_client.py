@@ -37,9 +37,13 @@ class AsyncClient:
         nick: str,
         *,
         event_callback: Callable[[ClientEvent], Any],
+        drain_timeout: float = 30,
+        close_timeout: float = 5,
     ) -> None:
         self.nick = nick
         self.event_callback = event_callback
+        self.drain_timeout = drain_timeout
+        self.close_timeout = close_timeout
 
         self._protocol = Client(nick)
         self._reader = None
@@ -92,8 +96,7 @@ class AsyncClient:
 
         # Any exceptions here will be repeated in _read_loop()
         self._writer.close()
-        with contextlib.suppress(Exception):
-            await self._writer.wait_closed()
+        await self._wait_closed()
 
     async def send_message(self, channel_name: str, content: str) -> None:
         data = self._protocol.send_message(channel_name, content)
@@ -134,7 +137,7 @@ class AsyncClient:
             events, outgoing = self._protocol.receive_bytes(data)
             writer.write(outgoing)
             await self._handle_events(events)
-            await writer.drain()  # exert backpressure
+            await self._drain()  # exert backpressure
 
     async def _handshake(self) -> bool | None:
         assert self._writer is not None
@@ -185,4 +188,14 @@ class AsyncClient:
     async def _send_and_drain(self, data: bytes) -> None:
         assert self._writer is not None
         self._writer.write(data)
-        await self._writer.drain()
+        await self._drain()
+
+    async def _drain(self) -> None:
+        assert self._writer is not None
+        await asyncio.wait_for(self._writer.drain(), timeout=self.drain_timeout)
+
+    async def _wait_closed(self) -> None:
+        assert self._writer is not None
+        timeout = self.close_timeout
+        with contextlib.suppress(Exception):
+            await asyncio.wait_for(self._writer.wait_closed(), timeout=timeout)

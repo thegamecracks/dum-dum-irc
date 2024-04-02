@@ -35,7 +35,11 @@ class Connection:
             events, outgoing = self.server.receive_bytes(data)
             self.writer.write(outgoing)
             await self._handle_events(events)
-            await self.writer.drain()  # exert backpressure
+            await self._drain()  # exert backpressure
 
     async def _handle_events(self, events: list[ServerEvent]) -> None:
         await self.manager._handle_events(self, events)
+
+    async def _drain(self) -> None:
+        timeout = self.manager.drain_timeout
+        await asyncio.wait_for(self.writer.drain(), timeout=timeout)

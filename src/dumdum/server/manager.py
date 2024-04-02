@@ -23,10 +23,19 @@ log = logging.getLogger(__name__)
 
 
 class Manager:
-    def __init__(self, state: ServerState, ssl: ssl.SSLContext | None) -> None:
+    def __init__(
+        self,
+        state: ServerState,
+        ssl: ssl.SSLContext | None,
+        *,
+        drain_timeout: float = 30,
+        close_timeout: float = 5,
+    ) -> None:
         self.state = state
         self.connections: list[Connection] = []
         self.ssl = ssl
+        self.drain_timeout = drain_timeout
+        self.close_timeout = close_timeout
 
     async def accept_connection(
         self,
@@ -52,13 +61,17 @@ class Manager:
             log.info("Connection %s has disconnected", addr)
 
             writer.close()
-            with contextlib.suppress(Exception):
-                await writer.wait_closed()
+            await self._wait_closed(writer)
 
             self._close_connection(connection)
 
     def _create_server(self) -> Server:
         return Server()
+
+    async def _wait_closed(self, writer: asyncio.StreamWriter) -> None:
+        timeout = self.close_timeout
+        with contextlib.suppress(Exception):
+            await asyncio.wait_for(writer.wait_closed(), timeout=timeout)
 
     async def _handle_events(self, conn: Connection, events: list[ServerEvent]) -> None:
         for event in events:
