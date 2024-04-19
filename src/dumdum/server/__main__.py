@@ -43,12 +43,12 @@ def main():
     parser.add_argument(
         "--host",
         default=None,
-        help="The address to host on",
+        help="The address to host on, or all interfaces when not supplied",
     )
     parser.add_argument(
         "--port",
         default=6667,
-        help="The port number to host on",
+        help="The port number to host on (default: %(default)d)",
     )
     parser.add_argument(
         "--cert",
