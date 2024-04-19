@@ -31,7 +31,42 @@ pip install git+https://github.com/thegamecracks/dum-dum-irc
 Once installed, you can use the `dumdum` and `dumdum-server` commands.
 Running `dumdum` starts a graphical client which you can use to join
 Dumdum servers, while `dumdum-server` is used to host servers of your own.
-Both support the `-h/--help` option if you want to see more details on their usage.
+Both support the `-h/--help` option if you want to see more details:
+
+```sh
+usage: dumdum [-h] [-v] {appdirs} ...
+
+Start the client interface for connecting to dumdum servers.
+
+positional arguments:
+  {appdirs}
+
+options:
+  -h, --help     show this help message and exit
+  -v, --verbose  Increase logging verbosity
+```
+
+```sh
+usage: dumdum-server [-h] [-v] [-c CHANNELS [CHANNELS ...]] [--host HOST] [--port PORT] [--cert CERT]
+
+Host a dumdum server.
+
+To use TLS encryption, you must provide a certificate and private key.
+This can be specified as either:
+1. A single file containing both the private key and certificate:
+     --cert hello.pem
+2. A pair of certificate and private key files, separated with a colon:
+     --cert hello.crt:hello.key
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Increase logging verbosity
+  -c CHANNELS [CHANNELS ...], --channels CHANNELS [CHANNELS ...]
+                        A list of channels
+  --host HOST           The address to host on, or all interfaces when not supplied
+  --port PORT           The port number to host on (default: 6667)
+  --cert CERT           The SSL certificate and private key to use
+```
 
 ## Implementation
 
