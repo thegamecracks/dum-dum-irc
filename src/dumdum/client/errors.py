@@ -8,3 +8,7 @@ class ServerCannotUpgradeSSLError(Exception):
 
 class AuthenticationFailedError(Exception):
     """Raised when authentication with the dumdum server fails."""
+
+
+class DisconnectRequested(Exception):
+    """Raised when the current connection should be disconnected."""

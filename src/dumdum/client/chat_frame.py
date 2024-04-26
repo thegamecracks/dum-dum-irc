@@ -3,7 +3,7 @@ from __future__ import annotations
 import collections
 import concurrent.futures
 import time
-from tkinter import Event, StringVar
+from tkinter import Event, Menu, StringVar
 from tkinter.ttk import Button, Entry, Frame, Label, Treeview
 from typing import ContextManager
 
@@ -255,3 +255,18 @@ class SendBox(Frame):
         self.content_entry_var.set("")
         coro = self.parent.app.client.send_message(channel.name, content)
         self.parent.app.submit(coro)
+
+
+class ChatMenu(Menu):
+    def __init__(self, parent: TkApp) -> None:
+        super().__init__(parent)
+
+        self.parent = parent
+
+        self.connection = Menu(self)
+        self.connection.add_command(label="Disconnect", command=self.do_disconnect)
+
+        self.add_cascade(label="Connection", menu=self.connection)
+
+    def do_disconnect(self) -> None:
+        self.parent.disconnect()

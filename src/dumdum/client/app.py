@@ -3,7 +3,7 @@ import concurrent.futures
 import logging
 import queue
 import ssl
-from tkinter import Event, Tk, messagebox
+from tkinter import Event, Menu, Tk, messagebox
 from tkinter.ttk import Frame
 from typing import Any, Awaitable, ContextManager, Protocol, Type, runtime_checkable
 
@@ -17,6 +17,7 @@ from .async_client import AsyncClient
 from .errors import (
     AuthenticationFailedError,
     ClientCannotUpgradeSSLError,
+    DisconnectRequested,
     ServerCannotUpgradeSSLError,
 )
 from .event_thread import EventThread
@@ -68,10 +69,12 @@ class TkApp(Tk):
         self._connect_lifetime_with_event_thread(event_thread)
 
         self._client_events = queue.Queue()
+        self._disconnect_requested = asyncio.Event()
         self._last_connection_exc = None
 
         self.title("Dumdum Client")
         self.geometry("900x600")
+        self.option_add("*tearOff", False)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -87,6 +90,12 @@ class TkApp(Tk):
         self.frame.destroy()
         self.frame = frame
         self.frame.grid(sticky="nesw")
+
+    def switch_menu(self, menu: Menu | None) -> None:
+        if menu is None:
+            menu = Menu(self)
+
+        self.configure(menu=menu)
 
     def submit(self, coro: Awaitable[Any]) -> concurrent.futures.Future:
         fut = asyncio.run_coroutine_threadsafe(coro, self.event_thread.loop)
@@ -105,8 +114,12 @@ class TkApp(Tk):
 
         coro = self._run_connection(host, port, ssl=ssl)
         self._connection_task = asyncio.create_task(coro)
+        self._disconnect_requested.clear()
 
         await self.client._wait_for_authentication()
+
+    def disconnect(self) -> None:
+        self.event_thread.loop.call_soon_threadsafe(self._disconnect_requested.set)
 
     def _connect_lifetime_with_event_thread(self, event_thread: EventThread) -> None:
         # In our application we'll be running an asyncio event loop in
@@ -133,8 +146,10 @@ class TkApp(Tk):
         ssl: ssl.SSLContext | None,
     ) -> None:
         try:
-            async with self.client.connect(host, port, ssl=ssl):
-                await self.client.run_forever()
+            tg = asyncio.TaskGroup()
+            async with self.client.connect(host, port, ssl=ssl), tg:
+                tg.create_task(self.client.run_forever())
+                tg.create_task(self._wait_for_disconnect_request())
         except BaseException as e:
             self._last_connection_exc = e
         else:
@@ -145,6 +160,10 @@ class TkApp(Tk):
     def _handle_event_threadsafe(self, event: ClientEvent):
         self._client_events.put_nowait(event)
         self.event_generate("<<ClientEvent>>")
+
+    async def _wait_for_disconnect_request(self) -> None:
+        await self._disconnect_requested.wait()
+        raise DisconnectRequested()
 
     def _on_client_event(self, event: Event) -> None:
         self._handle_event(self._client_events.get_nowait())
@@ -166,9 +185,10 @@ class TkApp(Tk):
                 messagebox.showerror("Authentication Interrupted", message)
                 return
 
-            from .chat_frame import ChatFrame
+            from .chat_frame import ChatFrame, ChatMenu
 
             self.switch_frame(ChatFrame(self))
+            self.switch_menu(ChatMenu(self))
             self.submit(self.client.list_channels())
 
         if isinstance(self.frame, Dispachable):
@@ -210,6 +230,8 @@ class TkApp(Tk):
                 "connect, you must download their certificate from a trusted "
                 "source and then specify it in the certificate field.",
             )
+        elif has_exception(exc, DisconnectRequested):
+            log.info("Disconnected from server by client")
         elif isinstance(exc, BaseExceptionGroup) and len(exc.exceptions) == 1:
             first_exception = exc.exceptions[0]
             log.error("Lost connection with server", exc_info=exc)
@@ -229,6 +251,7 @@ class TkApp(Tk):
 
         if not isinstance(self.frame, ConnectFrame):
             self.switch_frame(ConnectFrame(self))
+            self.switch_menu(None)
 
 
 def log_fut_exception(fut: concurrent.futures.Future) -> None:
