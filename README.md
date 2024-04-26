@@ -7,7 +7,7 @@
 A handcrafted implementation of an internet relay chat without following
 any conventions or RFC standards.
 
-![Two client windows side-by-side](https://raw.githubusercontent.com/thegamecracks/dum-dum-irc/main/docs/images/demo.png)
+![](https://raw.githubusercontent.com/thegamecracks/dum-dum-irc/main/docs/images/demo.png)
 
 ### [Changelog] | [Contributing Guide]
 
