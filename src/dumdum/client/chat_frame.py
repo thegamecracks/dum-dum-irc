@@ -34,7 +34,7 @@ class ChatFrame(Frame):
         self.grid_rowconfigure(0, weight=1)
 
         self.channels: list[Channel] = []
-        self.message_cache = MessageCache()
+        self.message_cache = MessageCache(max_messages=1000)
 
         self.channel_list = ChannelList(self)
         self.channel_list.grid(row=0, column=0, rowspan=2, padx=(0, 10), sticky="nesw")
@@ -214,17 +214,23 @@ class MessageView(Frame):
 
 
 class MessageCache:
-    def __init__(self) -> None:
-        self.channel_messages: dict[str, list[Message]] = collections.defaultdict(list)
+    _channel_messages: dict[str, collections.deque[Message]]
+
+    def __init__(self, *, max_messages: int) -> None:
+        self.max_messages = max_messages
+        self._channel_messages = collections.defaultdict(self._create_message_queue)
 
     def add_message(self, message: Message) -> None:
-        self.channel_messages[message.channel_name].append(message)
+        self._channel_messages[message.channel_name].append(message)
 
     def get_messages(self, channel: Channel) -> list[Message]:
-        messages = self.channel_messages.get(channel.name)
+        messages = self._channel_messages.get(channel.name)
         if messages is None:
             return []
-        return messages.copy()
+        return list(messages)
+
+    def _create_message_queue(self) -> collections.deque[Message]:
+        return collections.deque(maxlen=self.max_messages)
 
 
 class SendBox(Frame):
