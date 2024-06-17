@@ -1,3 +1,6 @@
+# pynsist build artifacts
+pynsist_pkgs/
+
 # SSL Certificates
 *.pem
 *.crt
