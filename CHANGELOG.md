@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.2] - 2024-06-17
+
+### Added
+
+- Connection menu to allow disconnecting from servers without restarting the client
+
+### Changed
+
+- Clarify default host/port arguments for `dumdum-server`
+- Limit client message cache to 1000 per channel
+
 ## [0.4.1] - 2024-04-04
 
 ### Added
@@ -204,7 +215,8 @@ usually after receiving `ServerEventListMessages`.
 - `dumdum.client` asyncio tkinter GUI client
 - GitHub workflows for pyright and pytest
 
-[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.1...main
+[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.2...main
+[0.4.2]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.0.post1...v0.4.1
 [0.4.0.post1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.0...v0.4.0.post1
 [0.4.0]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.3.0...v0.4.0
