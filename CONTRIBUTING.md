@@ -34,8 +34,8 @@ the relevant changes.
     If doing so would exceed the line length, consider refactoring the argument
     into a separate variable if not already done.
 
-- Line continuation (`\`) are **NOT** allowed and should be managed with either
-  implicit line continuation, decomposition of expressions into multiple statements,
+- Line continuations (`\`) are **NOT** allowed and should be managed with either
+  implicit line continuations, decomposition of expressions into multiple statements,
   or refactoring into functions.
 
 - All code must **NOT** have any trailing whitespace
