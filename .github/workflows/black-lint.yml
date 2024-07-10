@@ -1,0 +1,21 @@
+name: Lint with black
+
+on:
+  push:
+    paths:
+      - 'src/**.py'
+      - 'tests/**.py'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'src/**.py'
+      - 'tests/**.py'
+
+jobs:
+  lint:
+    name: Run black
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: psf/black@24.4.2
