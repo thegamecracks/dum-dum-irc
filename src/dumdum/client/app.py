@@ -223,7 +223,9 @@ class TkApp(Tk):
                 "connect using an insecure connection, you must turn off SSL.",
             )
         elif is_self_signed_certificate_exception(exc):
-            log.info("Cannot connect to server, self-signed certificate must be provided")
+            log.info(
+                "Cannot connect to server, self-signed certificate must be provided"
+            )
             messagebox.showerror(
                 "Cannot Upgrade SSL",
                 "The server is using a self-signed certificate. In order to "
