@@ -191,7 +191,7 @@ class TkApp(Tk):
             self.switch_menu(ChatMenu(self))
             self.submit(self.client.list_channels())
 
-        if isinstance(self.frame, Dispachable):
+        if isinstance(self.frame, Dispatchable):
             self.frame.handle_client_event(event)
 
     def _on_connection_lost(self, event: Event) -> None:
@@ -264,5 +264,5 @@ def log_fut_exception(fut: concurrent.futures.Future) -> None:
 
 
 @runtime_checkable
-class Dispachable(Protocol):
+class Dispatchable(Protocol):
     def handle_client_event(self, event: ClientEvent) -> Any: ...
