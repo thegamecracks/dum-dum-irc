@@ -58,12 +58,12 @@ the relevant changes.
   from .connection import SQLiteConnection
   ```
 
-- Relatve imports **MAY** be used for sibling modules, i.e. those that reside
+- Relative imports **MAY** be used for sibling modules, i.e. those that reside
   in the same directory
 
 - Absolute imports **MUST** be used for parent modules, i.e. those that exist
   outside of the module. In other words, relative imports consisting of two
-  or more leadiing periods must be refactored into absolute imports.
+  or more leading periods must be refactored into absolute imports.
 
   ```py
   # Bad:
