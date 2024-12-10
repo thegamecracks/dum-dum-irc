@@ -17,7 +17,7 @@ from dumdum.protocol import Channel
 from dumdum.logging import configure_logging
 
 from .manager import host_server
-from .state import ServerState
+from .state import MessageCache, ServerState
 
 
 def main():
@@ -56,17 +56,24 @@ def main():
         help="The SSL certificate and private key to use",
         type=parse_cert,
     )
+    parser.add_argument(
+        "--max-messages",
+        default=1000,  # TODO: maybe support removing message cap?
+        help="The maximum number of messages cached per channel (default: %(default)d)",
+        type=int,
+    )
 
     args = parser.parse_args()
     verbose: int = args.verbose
     channels: list[Channel] = args.channels or get_default_channels()
     host: str | None = args.host
     port: int = args.port
+    max_messages: int = args.max_messages
     ssl_context: ssl.SSLContext | None = args.cert
 
     configure_logging("server", verbose)
 
-    state = ServerState()
+    state = ServerState(message_cache=MessageCache(max_messages=max_messages))
     for channel in channels:
         state.add_channel(channel)
 
