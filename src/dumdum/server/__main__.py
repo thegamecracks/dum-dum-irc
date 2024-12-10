@@ -49,6 +49,7 @@ def main():
         "--port",
         default=6667,
         help="The port number to host on (default: %(default)d)",
+        type=int,
     )
     parser.add_argument(
         "--cert",
