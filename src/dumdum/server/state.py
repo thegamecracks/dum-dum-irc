@@ -34,8 +34,14 @@ class ServerState:
         *,
         before: int | None = None,
         after: int | None = None,
+        limit: int = 100,
     ) -> Sequence[Message]:
-        return self.message_cache.get_messages(channel_name, before=before, after=after)
+        return self.message_cache.get_messages(
+            channel_name,
+            before=before,
+            after=after,
+            limit=limit,
+        )
 
     def add_message(self, message: Message) -> None:
         return self.message_cache.add_message(message)
@@ -92,6 +98,7 @@ class MessageCache:
         *,
         before: int | None = None,
         after: int | None = None,
+        limit: int = 100,
     ) -> Sequence[Message]:
         messages = list(self._channel_messages[channel_name])
 
@@ -103,7 +110,7 @@ class MessageCache:
             i = bisect.bisect_right(messages, after, key=lambda m: m.id)
             messages = messages[:i]
 
-        return messages[-100:]
+        return messages[-limit:]
 
     def remove_message(self, channel_name: str, id: int) -> Message | None:
         messages = self._channel_messages[channel_name]
