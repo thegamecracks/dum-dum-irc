@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       can_publish:
-        description: "Publish built distributions"
+        description: 'Publish built distributions'
         type: boolean
         required: true
         default: true
@@ -24,7 +24,7 @@ jobs:
         with:
           cache: pip
           cache-dependency-path: pyproject.toml
-          python-version: "3.11"
+          python-version: '3.11'
       - run: pip install build
       - run: python -m build
       - uses: actions/upload-artifact@v4
@@ -33,11 +33,11 @@ jobs:
           path: dist/
 
   publish:
+    if: ${{ inputs.can_publish }}
     environment: release
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-    if: ${{ inputs.can_publish }}
     needs:
       - build
     steps:
