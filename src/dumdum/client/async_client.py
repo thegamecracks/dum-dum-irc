@@ -130,6 +130,8 @@ class AsyncClient:
         writer: asyncio.StreamWriter,
     ) -> None:
         while True:
+            # FIXME: may not terminate if drain() from another task results
+            #        in connection reset
             data = await reader.read(1024)
             if len(data) == 0:
                 break
