@@ -45,4 +45,12 @@ branch = true
 source_pkgs = ["dumdum"]
 omit = ["src/dumdum/client/*", "src/dumdum/server.py"]
 
+[tool.pyright]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/.*",
+    "build",
+]
+
 [tool.setuptools_scm]
