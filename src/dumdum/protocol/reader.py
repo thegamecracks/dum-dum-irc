@@ -20,7 +20,9 @@ class Reader:
             n = min(n, len(self.buffer))
 
         start, self._index = self._index, self._index + n
-        return self.buffer[start : self._index]
+
+        data = self.buffer[start : self._index]
+        return bytes(data) if isinstance(data, bytearray) else data
 
     def readexactly(self, n: int) -> bytes:
         if n < 0:
