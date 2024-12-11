@@ -47,7 +47,7 @@ options:
 ```
 
 ```sh
-usage: dumdum-server [-h] [-v] [-c CHANNELS [CHANNELS ...]] [--host HOST] [--port PORT] [--cert CERT]
+usage: dumdum-server [-h] [-v] [-c CHANNELS [CHANNELS ...]] [--host HOST] [--port PORT] [--cert CERT] [--max-messages MAX_MESSAGES]
 
 Host a dumdum server.
 
@@ -66,6 +66,8 @@ options:
   --host HOST           The address to host on, or all interfaces when not supplied
   --port PORT           The port number to host on (default: 6667)
   --cert CERT           The SSL certificate and private key to use
+  --max-messages MAX_MESSAGES
+                        The maximum number of messages cached per channel (default: 1000)
 ```
 
 ## Implementation
