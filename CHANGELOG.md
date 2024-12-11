@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.4.3] - 2024-12-11
+
+### Changed
+
+- Limit server message cache to 1000 per channel, configurable with `--max-messages`
+
 ## [0.4.2] - 2024-06-17
 
 ### Added
@@ -215,7 +221,8 @@ usually after receiving `ServerEventListMessages`.
 - `dumdum.client` asyncio tkinter GUI client
 - GitHub workflows for pyright and pytest
 
-[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.2...main
+[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.3...main
+[0.4.3]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.0.post1...v0.4.1
 [0.4.0.post1]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.0...v0.4.0.post1
