@@ -133,6 +133,7 @@ class MessageList(Frame):
     UPDATE_IDLE_PERIOD = 0.75
 
     _last_configured: float | None
+    _force_update_id: str
 
     def __init__(self, parent: ChatFrame):
         super().__init__(parent, borderwidth=1, relief="solid")
@@ -158,6 +159,7 @@ class MessageList(Frame):
         self.after(self.UPDATE_RATE, self._update_loop)
 
         self.bind("<Configure>", self._on_configure)
+        self.bind("<Map>", self._on_map)
 
     def add_message(self, message: Message) -> None:
         widget = MessageView(self._scroll_frame.inner, self, message)
@@ -183,6 +185,15 @@ class MessageList(Frame):
 
     def _on_configure(self, event: Event) -> None:
         self._last_configured = time.perf_counter()
+
+    def _on_map(self, event: Event) -> None:
+        self._force_update_id = self.bind("<Configure>", self._force_update, add="+")
+
+    def _force_update(self, event: Event) -> None:
+        self.unbind("<Configure>", self._force_update_id)
+        width = self._get_canvas_width()
+        for message in self.messages:
+            message.wrap_to_width(width)
 
     def _update_loop(self) -> None:
         self.after(self.UPDATE_RATE, self._update_loop)
