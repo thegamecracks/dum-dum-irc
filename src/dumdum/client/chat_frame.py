@@ -135,7 +135,7 @@ class MessageList(Frame):
     _last_configured: float | None
 
     def __init__(self, parent: ChatFrame):
-        super().__init__(parent)
+        super().__init__(parent, borderwidth=1, relief="solid")
 
         self.parent = parent
 
