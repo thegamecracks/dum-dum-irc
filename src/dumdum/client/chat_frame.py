@@ -161,7 +161,7 @@ class MessageList(Frame):
 
     def add_message(self, message: Message) -> None:
         widget = MessageView(self._scroll_frame.inner, self, message)
-        widget.wrap_to_width(self.winfo_width())
+        widget.wrap_to_width(self._get_canvas_width())
         widget.grid(row=len(self.messages), column=0, sticky="ew")
         self.messages.append(widget)
 
@@ -193,8 +193,14 @@ class MessageList(Frame):
             return
 
         self._last_configured = None
+
+        width = self._get_canvas_width()
         for message in self.messages:
-            message.wrap_to_width(self.winfo_width())
+            message.wrap_to_width(width)
+
+    def _get_canvas_width(self) -> int:
+        canvas = self._scroll_frame.grid_slaves(0, 0)[0]
+        return canvas.winfo_width()
 
 
 class MessageView(Frame):
