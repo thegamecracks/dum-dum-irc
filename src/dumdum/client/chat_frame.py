@@ -41,7 +41,7 @@ class ChatFrame(Frame):
         self.messages = MessageList(self)
         self.messages.grid(row=0, column=1, sticky="nesw")
         self.send_box = SendBox(self)
-        self.send_box.grid(row=1, column=1, sticky="nesw")
+        self.send_box.grid(row=1, column=1, sticky="nesw", pady=(10, 0))
 
     def handle_client_event(self, event: ClientEvent) -> None:
         if isinstance(event, ClientEventChannelsListed):
