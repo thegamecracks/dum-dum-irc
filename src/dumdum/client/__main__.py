@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import contextlib
-import sys
 from typing import Iterator
 
 from dumdum.logging import configure_logging
@@ -13,6 +12,7 @@ from .app import TkApp
 from .connect_frame import ConnectFrame
 from .event_thread import EventThread
 from .store import ClientStore
+from .styling import apply_style, enable_windows_dpi_awareness
 
 
 def main():
@@ -59,6 +59,7 @@ def run_gui() -> None:
             event_thread=event_thread,
             store_factory=store_factory,
         )
+        apply_style(app)
         app.switch_frame(ConnectFrame(app))
 
         try:
@@ -67,13 +68,6 @@ def run_gui() -> None:
             app.destroy()
             app.mainloop()
             raise
-
-
-def enable_windows_dpi_awareness():
-    if sys.platform == "win32":
-        from ctypes import windll
-
-        windll.shcore.SetProcessDpiAwareness(2)
 
 
 def show_appdirs() -> None:
