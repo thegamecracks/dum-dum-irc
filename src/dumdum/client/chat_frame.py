@@ -191,6 +191,9 @@ class MessageList(Frame):
 
     def _force_update(self, event: Event) -> None:
         self.unbind("<Configure>", self._force_update_id)
+        self._wrap_messages()
+
+    def _wrap_messages(self) -> None:
         width = self._get_canvas_width()
         for message in self.messages:
             message.wrap_to_width(width)
@@ -204,10 +207,7 @@ class MessageList(Frame):
             return
 
         self._last_configured = None
-
-        width = self._get_canvas_width()
-        for message in self.messages:
-            message.wrap_to_width(width)
+        self._wrap_messages()
 
     def _get_canvas_width(self) -> int:
         canvas = self._scroll_frame.grid_slaves(0, 0)[0]
