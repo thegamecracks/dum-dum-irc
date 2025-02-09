@@ -216,8 +216,8 @@ class MessageView(Frame):
         self.content.grid(row=0, column=1, sticky="ew")
 
     def wrap_to_width(self, width: int) -> None:
-        minimum = 800
-        maximum = width - self.nick.winfo_reqwidth() - 20
+        minimum = 300
+        maximum = width - self.nick.winfo_reqwidth()
         self.content.configure(wraplength=max(minimum, maximum))
 
 
