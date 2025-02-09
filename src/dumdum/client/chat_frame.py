@@ -150,6 +150,8 @@ class MessageList(Frame):
             yscroll=True,
             autoscroll=True,
         )
+        canvas = self._scroll_frame.grid_slaves(0, 0)[0]
+        canvas.grid(padx=10, pady=10)
         self._scroll_frame.grid(row=0, column=0, sticky="nesw")
 
         self._last_configured = None
