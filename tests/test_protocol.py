@@ -97,11 +97,7 @@ def test_authenticate_incompatible_version():
     client = Client(nick=nick)
     server = Server()
 
-    client.PROTOCOL_VERSION = server.PROTOCOL_VERSION + 1  # type: ignore
-    if client.PROTOCOL_VERSION > 255:
-        client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
-
-    assert client.PROTOCOL_VERSION != server.PROTOCOL_VERSION
+    client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
 
     client_events, server_events = communicate(client, client.hello(), server)
     assert client_events == [
