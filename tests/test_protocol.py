@@ -92,7 +92,7 @@ def test_authenticate():
     assert server_events == []
 
 
-def test_authenticate_incompatible_version():
+def test_hello_incompatible_version():
     nick = "thegamecracks"
     client = Client(nick=nick)
     server = Server()
