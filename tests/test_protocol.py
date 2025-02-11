@@ -68,6 +68,10 @@ def assert_event_order(events: Sequence[object], *expected_events: Type[object])
     # fmt: on
 
 
+def test_protocol_version_matches():
+    assert Client.PROTOCOL_VERSION == Server.PROTOCOL_VERSION
+
+
 def test_authenticate():
     nick = "thegamecracks"
     client = Client(nick=nick)
