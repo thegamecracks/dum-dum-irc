@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 from typing import Sequence
 
 from dumdum.protocol.buffer import extend_limited_buffer
@@ -36,9 +36,10 @@ ParsedData = tuple[list[ServerEvent], bytes]
 
 
 class ServerState(Enum):
-    AWAITING_HELLO = 0
-    AWAITING_AUTHENTICATION = 1
-    READY = 2
+    AWAITING_CLIENT_HELLO = auto()
+    AWAITING_SERVER_HELLO = auto()
+    AWAITING_AUTHENTICATION = auto()
+    READY = auto()
 
 
 class Server(Protocol):
@@ -50,14 +51,15 @@ class Server(Protocol):
         self.buffer_size = buffer_size
 
         self._buffer = bytearray()
-        self._state = ServerState.AWAITING_HELLO
+        self._state = ServerState.AWAITING_CLIENT_HELLO
 
     def receive_bytes(self, data: bytes) -> ParsedData:
         extend_limited_buffer(self._buffer, data, limit=self.buffer_size)
         return self._maybe_parse_buffer()
 
     def hello(self, *, using_ssl: bool) -> bytes:
-        self._assert_state(ServerState.AWAITING_AUTHENTICATION)
+        self._assert_state(ServerState.AWAITING_SERVER_HELLO)
+        self._state = ServerState.AWAITING_AUTHENTICATION
         return bytes(ServerMessageHello(using_ssl))
 
     def authenticate(self, *, success: bool) -> bytes:
@@ -121,7 +123,7 @@ class Server(Protocol):
         raise RuntimeError(f"No handler for {t}")  # pragma: no cover
 
     def _parse_hello(self, reader: Reader) -> ParsedData:
-        self._assert_state(ServerState.AWAITING_HELLO)
+        self._assert_state(ServerState.AWAITING_CLIENT_HELLO)
 
         version = reader.readexactly(1)[0]
         if version != self.PROTOCOL_VERSION:
@@ -130,7 +132,7 @@ class Server(Protocol):
             return [event], bytes(response)
 
         event = ServerEventHello()
-        self._state = ServerState.AWAITING_AUTHENTICATION
+        self._state = ServerState.AWAITING_SERVER_HELLO
         return [event], b""
 
     def _authenticate(self, reader: Reader) -> ParsedData:

@@ -68,6 +68,25 @@ def assert_event_order(events: Sequence[object], *expected_events: Type[object])
     # fmt: on
 
 
+def assert_incompatible_version(
+    client: Client,
+    server: Server,
+    client_events: list[object],
+    server_events: list[object],
+) -> None:
+    assert client_events == [
+        ClientEventIncompatibleVersion(
+            client_version=client.PROTOCOL_VERSION,
+            server_version=server.PROTOCOL_VERSION,
+        )
+    ]
+    assert server_events == [
+        ServerEventIncompatibleVersion(
+            version=client.PROTOCOL_VERSION,
+        )
+    ]
+
+
 def test_protocol_version_matches():
     assert Client.PROTOCOL_VERSION == Server.PROTOCOL_VERSION
 
@@ -104,17 +123,7 @@ def test_hello_incompatible_version():
     client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
 
     client_events, server_events = communicate(client, client.hello(), server)
-    assert client_events == [
-        ClientEventIncompatibleVersion(
-            client_version=client.PROTOCOL_VERSION,
-            server_version=server.PROTOCOL_VERSION,
-        )
-    ]
-    assert server_events == [
-        ServerEventIncompatibleVersion(
-            version=client.PROTOCOL_VERSION,
-        )
-    ]
+    assert_incompatible_version(client, server, client_events, server_events)
 
 
 def test_send_message():
@@ -271,3 +280,54 @@ def test_buffer_overflow_prevention():
 
     with pytest.raises(BufferOverflowError):
         server.receive_bytes(data)
+
+
+def test_double_hello():
+    client = Client("thegamecracks")
+    server = Server()
+
+    data = client.hello()
+    communicate(client, data, server)
+    with pytest.raises(InvalidStateError):
+        communicate(client, data, server)
+
+    data = server.hello(using_ssl=False)
+    communicate(server, data, client)
+    with pytest.raises(InvalidStateError):
+        communicate(server, data, client)
+
+
+def test_hello_after_incompatible_version():
+    client = Client("thegamecracks")
+    server = Server()
+
+    client.PROTOCOL_VERSION = server.PROTOCOL_VERSION - 1  # type: ignore
+    client_events, server_events = communicate(client, client.hello(), server)
+    assert_incompatible_version(client, server, client_events, server_events)
+
+    client.PROTOCOL_VERSION = server.PROTOCOL_VERSION
+    client_events, server_events = communicate(client, client.hello(), server)
+    assert client_events == []
+    assert server_events == [ServerEventHello()]
+
+
+def test_server_hello_before_client_hello():
+    server = Server()
+
+    with pytest.raises(InvalidStateError):
+        server.hello(using_ssl=False)
+
+
+def test_authenticate_before_server_hello():
+    client = Client("thegamecracks")
+    server = Server()
+
+    data = client.hello()
+    with pytest.raises(InvalidStateError):
+        client.authenticate()
+
+    client._state = ClientState.AWAITING_AUTHENTICATION
+    data += client.authenticate()
+
+    with pytest.raises(InvalidStateError):
+        communicate(client, data, server)
