@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 
 from dumdum.protocol.buffer import extend_limited_buffer
 from dumdum.protocol.channel import Channel
@@ -33,9 +33,10 @@ ParsedData = tuple[list[ClientEvent], bytes]
 
 
 class ClientState(Enum):
-    AWAITING_HELLO = 0
-    AWAITING_AUTHENTICATION = 1
-    READY = 2
+    AWAITING_CLIENT_HELLO = auto()
+    AWAITING_SERVER_HELLO = auto()
+    AWAITING_AUTHENTICATION = auto()
+    READY = auto()
 
 
 class Client(Protocol):
@@ -48,14 +49,15 @@ class Client(Protocol):
         self.buffer_size = buffer_size
 
         self._buffer = bytearray()
-        self._state = ClientState.AWAITING_HELLO
+        self._state = ClientState.AWAITING_CLIENT_HELLO
 
     def receive_bytes(self, data: bytes) -> ParsedData:
         extend_limited_buffer(self._buffer, data, limit=self.buffer_size)
         return self._maybe_parse_buffer()
 
     def hello(self) -> bytes:
-        self._assert_state(ClientState.AWAITING_HELLO)
+        self._assert_state(ClientState.AWAITING_CLIENT_HELLO)
+        self._state = ClientState.AWAITING_SERVER_HELLO
         return bytes(ClientMessageHello(self.PROTOCOL_VERSION))
 
     def authenticate(self) -> bytes:
@@ -131,7 +133,7 @@ class Client(Protocol):
         raise RuntimeError(f"No handler for {t}")  # pragma: no cover
 
     def _parse_hello(self, reader: Reader) -> ParsedData:
-        self._assert_state(ClientState.AWAITING_HELLO)
+        self._assert_state(ClientState.AWAITING_SERVER_HELLO)
 
         using_ssl = int.from_bytes(reader.readexactly(1), byteorder="big") > 0
         event = ClientEventHello(using_ssl)
@@ -140,9 +142,10 @@ class Client(Protocol):
         return [event], b""
 
     def _parse_incompatible_version(self, reader: Reader) -> ParsedData:
-        self._assert_state(ClientState.AWAITING_HELLO)
+        self._assert_state(ClientState.AWAITING_SERVER_HELLO)
         version = reader.readexactly(1)[0]
         event = ClientEventIncompatibleVersion(version, self.PROTOCOL_VERSION)
+        self._state = ClientState.AWAITING_CLIENT_HELLO
         return [event], b""
 
     def _accept_authentication(self, reader: Reader) -> ParsedData:

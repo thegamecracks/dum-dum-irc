@@ -312,10 +312,17 @@ def test_hello_after_incompatible_version():
 
 
 def test_server_hello_before_client_hello():
+    client = Client("thegamecracks")
     server = Server()
 
     with pytest.raises(InvalidStateError):
         server.hello(using_ssl=False)
+
+    server._state = ServerState.AWAITING_SERVER_HELLO
+
+    data = server.hello(using_ssl=False)
+    with pytest.raises(InvalidStateError):
+        communicate(server, data, client)
 
 
 def test_authenticate_before_server_hello():
