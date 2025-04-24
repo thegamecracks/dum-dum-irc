@@ -5,7 +5,15 @@ import queue
 import ssl
 from tkinter import Event, Menu, Tk, messagebox
 from tkinter.ttk import Frame
-from typing import Any, Awaitable, ContextManager, Protocol, Type, runtime_checkable
+from typing import (
+    Any,
+    ContextManager,
+    Coroutine,
+    Protocol,
+    Type,
+    TypeVar,
+    runtime_checkable,
+)
 
 from dumdum.protocol import (
     ClientEvent,
@@ -22,6 +30,8 @@ from .errors import (
 )
 from .event_thread import EventThread
 from .store import ClientStore
+
+T = TypeVar("T")
 
 log = logging.getLogger(__name__)
 
@@ -97,7 +107,7 @@ class TkApp(Tk):
 
         self.configure(menu=menu)
 
-    def submit(self, coro: Awaitable[Any]) -> concurrent.futures.Future:
+    def submit(self, coro: Coroutine[Any, Any, T]) -> concurrent.futures.Future[T]:
         fut = asyncio.run_coroutine_threadsafe(coro, self.event_thread.loop)
         fut.add_done_callback(log_fut_exception)
         return fut
