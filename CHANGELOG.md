@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-04-24
+
+This release includes a breaking change to `ClientState` and `ServerState`,
+replacing `.AWAITING_HELLO` in both enumerations with `.AWAITING_CLIENT_HELLO`
+and `.AWAITING_SERVER_HELLO`. The protocol version remains unchanged at `0x02`.
+
+### Added
+
+- `ClientState.AWAITING_CLIENT_HELLO` and `.AWAITING_SERVER_HELLO`
+- `ServerState.AWAITING_CLIENT_HELLO` and `.AWAITING_SERVER_HELLO`
+
+### Removed
+
+- `ClientState.AWAITING_HELLO`
+- `ServerState.AWAITING_HELLO`
+
+### Security
+
+- Raise `InvalidStateError` when client attempts authentication before server `HELLO`
+  - In prior versions, if a client `HELLO` and `AUTHENTICATE` were received in the same
+    packet, the server would parse both messages and dispatch an authentication event
+    before the server could send its own `HELLO`. This is now rejected, and the server
+    protocol must call `.hello()` before it can parse an authentication attempt.
+    This ensures that clients connecting to servers with SSL enabled cannot successfully
+    authenticate before completing the SSL handshake.
+- Raise `InvalidStateError` when client and server `HELLO` are received out-of-order
+  - In prior versions, the server could send `HELLO` before having received the client
+    `HELLO`. This is now rejected by the client.
+
 ## [0.4.4] - 2025-02-09
 
 ### Changed
@@ -229,7 +258,8 @@ usually after receiving `ServerEventListMessages`.
 - `dumdum.client` asyncio tkinter GUI client
 - GitHub workflows for pyright and pytest
 
-[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.4...main
+[Unreleased]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.5.0...main
+[0.5.0]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.4...v0.5.0
 [0.4.4]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.3...v0.4.4
 [0.4.3]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.2...v0.4.3
 [0.4.2]: https://github.com/thegamecracks/dum-dum-irc/compare/v0.4.1...v0.4.2
