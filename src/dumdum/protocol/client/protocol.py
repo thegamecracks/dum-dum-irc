@@ -103,10 +103,11 @@ class Client(Protocol):
 
                 full_events.extend(events)
                 full_outgoing.extend(outgoing)
-        except (IndexError, ValueError) as e:
+        except UnicodeDecodeError as e:
             # FIXME: this is making stuff hard to debug...
-            if isinstance(e, UnicodeDecodeError):
-                raise MalformedDataError(str(e)) from e
+            raise MalformedDataError(str(e)) from e
+        except (IndexError, ValueError) as e:
+            pass
 
         return full_events, bytes(full_outgoing)
 
